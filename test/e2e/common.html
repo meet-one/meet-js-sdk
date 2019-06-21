@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+    <title>E2E Testing - Common</title>
+
+    <!-- necessary import -->
+    <script src="../../dist/meet-js-sdk.umd.js"></script>
+    <script src="https://cdn.bootcss.com/vConsole/3.3.0/vconsole.min.js"></script>
+    <script src="./script.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+
+    <script>
+      /** 因为这个方法没有回调 所以不知道执行的情况 */
+      testWebview = async e => {
+        executing(e)
+        try {
+          // BUG: 已知问题
+          let result = await meetwallet.webview('https://meet.one', 'MEET.ONE | HOME')
+          alert('testWebview:::', result)
+          success(e)
+          return true
+        } catch (error) {
+          failed(e)
+        }
+      }
+
+      testWebviewMenu = e => {
+        executing(e)
+        try {
+          meetwallet.webviewMenu('测试', () => {
+            success(e)
+            return true
+          })
+        } catch (error) {
+          failed(e)
+        }
+      }
+
+      testNetwork = async e => {
+        executing(e)
+        try {
+          let result = await meetwallet.network()
+          console.log(result)
+          alert(JSON.stringify(result))
+          success(e)
+          return true
+        } catch (error) {
+          failed(e)
+        }
+      }
+
+      testNavigate = async (e, target) => {
+        executing(e)
+        try {
+          let result = await meetwallet.navigate(target)
+          console.log(result)
+          success(e)
+          return true
+        } catch (error) {
+          failed(e)
+        }
+      }
+
+      testShare = async (e, type) => {
+        executing(e)
+        try {
+          let result = null
+          if (type === 1) {
+            // 文本
+            result = await meetwallet.shareText('share_title', 'I am the description')
+          } else if (type === 2) {
+            // 图片
+            result = await meetwallet.shareImage(
+              'https://static.ethte.com/meet/static/images/logo-landscape-8c94de9326b1e256dd02213449180174.png'
+            )
+          } else if (type === 3) {
+            // 连接
+            result = await meetwallet.shareLink('https://meet.one')
+          } else if (type === 4) {
+            // 文件 TODO:
+            result = await meetwallet.shareFile()
+          } else if (type === 5) {
+            // 口令 TODO:
+            result = await meetwallet.shareCode(
+              '麒麟红包',
+              '我给你发了一个红包，快来领取吧！',
+              'https://www.baidu.com',
+              'https://static.ethte.com/eosmax.png',
+              'https://static.ethte.com/MeetPC/2018_11_15/6923/eoscharge.png'
+            )
+          }
+          console.log(result)
+          success(e)
+          return true
+        } catch (error) {
+          console.log(error)
+          failed(e)
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Tests - Commons</h1>
+
+    <button onClick="runAllTests();">Run All Tests</button>
+
+    <div class="tests">
+      <div>
+        <h2>webview()</h2>
+        <button onClick="testWebview(event);">Test</button>
+      </div>
+
+      <div>
+        <h2>custom webview right menu</h2>
+        <button onClick="testWebviewMenu(event);">Test</button>
+      </div>
+
+      <div>
+        <h2>get current network and blockchain info</h2>
+        <button onClick="testNetwork(event);">Test</button>
+      </div>
+
+      <div>
+        <h2>navigate to EOSNodeVoteProxyPage</h2>
+        <button onClick="testNavigate(event, 'EOSNodeVoteProxyPage');">Test</button>
+      </div>
+
+      <div>
+        <h2>navigate to undefined route</h2>
+        <button onClick="testNavigate(event, 'Home');">Test</button>
+      </div>
+
+      <div>
+        <h2>Share Text</h2>
+        <button onClick="testShare(event, 1);">Test</button>
+      </div>
+
+      <div>
+        <h2>Share Image</h2>
+        <button onClick="testShare(event, 2);">Test</button>
+      </div>
+
+      <div>
+        <h2>Share Link</h2>
+        <button onClick="testShare(event, 3);">Test</button>
+      </div>
+
+      <div>
+        <h2>Share File</h2>
+        <button onClick="testShare(event, 4);">Test</button>
+      </div>
+
+      <div>
+        <h2>Share Code</h2>
+        <button onClick="testShare(event, 5);">Test</button>
+      </div>
+    </div>
+  </body>
+</html>
