@@ -1,9 +1,13 @@
 /** 初始化指定的参数 */
 interface Config {
-  /** 协议超时时间(ms)， 默认为 `60 * 1000`ms */
+  /** 协议超时时间(ms)， 默认为 `60000`ms */
   timeout?: number
   /** 协议名，默认为`meetone://` */
   protocal?: string
+  /** 是否设置为调试模式（调试模式会将相关信息打印出来, 包括协议与客户端返回） */
+  isDebug?: boolean
+  /** 当前版本 */
+  version?: string
 }
 
 interface ClientResponse {

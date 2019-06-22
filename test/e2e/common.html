@@ -44,7 +44,6 @@
         executing(e)
         try {
           let result = await meetwallet.network()
-          console.log(result)
           alert(JSON.stringify(result))
           success(e)
           return true
@@ -57,7 +56,6 @@
         executing(e)
         try {
           let result = await meetwallet.navigate(target)
-          console.log(result)
           success(e)
           return true
         } catch (error) {
@@ -93,11 +91,9 @@
               'https://static.ethte.com/MeetPC/2018_11_15/6923/eoscharge.png'
             )
           }
-          console.log(result)
           success(e)
           return true
         } catch (error) {
-          console.log(error)
           failed(e)
         }
       }

@@ -4,21 +4,19 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:51
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-23 01:18:59
+ * @Last Modified time: 2019-06-23 02:45:44
  */
 
 import { Config, ClientResponse, ErrorMessage } from './Interface'
+import { defaultConfig } from './defaultConfig'
 
 class PostMessage {
   private tryTimes: number = 0
-  /** 协议超时时间, 默认为 `60000 ms` */
-  timeout: number
-  /** 协议名,默认为`meetone://` */
-  protocal: string
+
+  config: Config
 
   constructor(config?: Config) {
-    this.protocal = (config && config.protocal) || 'meetone://'
-    this.timeout = (config && config.timeout) || 60 * 1000
+    this.config = config || defaultConfig
   }
 
   /** generate message and send to client */
@@ -36,20 +34,22 @@ class PostMessage {
         // @ts-ignore
         window[options.callbackId] = options.callback || function() {}
         const message = this.generateMessage(path, payload, Object.assign(options))
+        this.config.isDebug && console.debug(`send: ${path}`, message)
         this.sendMessage(message)
-        console.log(message)
         // @ts-ignore
         return window[options.callbackId]
       }
 
       // 非自定义回调id情况
+      let that = this
       return new Promise((resolve, reject) => {
         const callbackId = (options && options.callbackId) || this.getCallbackId()
         const message = this.generateMessage(path, payload, Object.assign({ callbackId }, options))
+        that.config.isDebug && console.debug(`send: ${path}`, message)
         this.sendMessage(message)
-        console.log(message)
         // @ts-ignore
         window[callbackId] = function(result: ClientResponse) {
+          that.config.isDebug && console.debug(`window[${callbackId}]:`, result)
           try {
             // 超时错误
             if (result.code === 998) {
@@ -81,7 +81,7 @@ class PostMessage {
             // @ts-ignore
             window[callbackId](params)
           }
-        }, this.timeout)
+        }, this.config.timeout)
       })
     } else {
       // nodejs
@@ -130,7 +130,10 @@ class PostMessage {
     payload: object,
     options?: { protocal?: string; callbackId?: string }
   ): string {
-    let { protocal = this.protocal, callbackId = this.getCallbackId() } = options || {}
+    let {
+      protocal = this.config.protocal || defaultConfig.protocal,
+      callbackId = this.getCallbackId()
+    } = options || {}
 
     let message = ''
     let payloadData = this.encode(payload)
