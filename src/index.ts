@@ -4,21 +4,28 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-21 20:50:15
+ * @Last Modified time: 2019-06-22 18:03:28
  */
 
 import Common from './app/Common'
+import { Config } from './app/Interface'
+
 const VERSION = '0.0.1'
+
+const defaultConfig: Config = {
+  protocal: 'meetone://',
+  timeout: 60 * 1000
+}
 
 class MeetWallet extends Common {
   /** current js-sdk version */
-  version: string = ''
+  version: string = VERSION
   /** protocal string */
-  protocal: string = 'meetone://'
+  protocal?: string = defaultConfig.protocal
 
-  constructor(protocal?: string) {
-    super(protocal)
-    this.version = VERSION
+  constructor(config?: Config) {
+    // super(config)
+    super(Object.assign(defaultConfig, config, { version: VERSION }))
     // for browsers
     if (typeof window !== 'undefined') {
       if (document.readyState !== 'loading') {
@@ -60,11 +67,6 @@ class MeetWallet extends Common {
         }
       })
     }
-  }
-
-  /** Change the meet-js-sdk Protocal */
-  setProtocal(protocal: string): void {
-    this.protocal = protocal
   }
 }
 

@@ -1,3 +1,11 @@
+/** 初始化指定的参数 */
+interface Config {
+  /** 协议超时时间(ms)， 默认为 `60 * 1000`ms */
+  timeout?: number
+  /** 协议名，默认为`meetone://` */
+  protocal?: string
+}
+
 interface ClientResponse {
   /** 状态码, 0为成功 */
   code: number
@@ -21,4 +29,4 @@ interface NetworkInfo extends ClientResponse {
   }
 }
 
-export { NetworkInfo, ClientResponse }
+export { NetworkInfo, ClientResponse, Config }

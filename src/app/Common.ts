@@ -3,16 +3,16 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:18
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-22 15:32:22
+ * @Last Modified time: 2019-06-22 17:22:29
  */
 import PostMessageModule from './PostMessageModule'
-import { NetworkInfo } from './Interface'
+import { NetworkInfo, Config } from './Interface'
 
 export default class Common {
   bridge: PostMessageModule
 
-  constructor(protocal?: string) {
-    this.bridge = new PostMessageModule(protocal)
+  constructor(config?: Config) {
+    this.bridge = new PostMessageModule(config)
   }
 
   navigate(target: string, options?: object | undefined): void {

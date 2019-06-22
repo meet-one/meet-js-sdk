@@ -4,8 +4,11 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:51
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-21 17:31:30
+ * @Last Modified time: 2019-06-22 18:03:16
  */
+
+import { Config } from './Interface'
+
 interface PostMessageInterface {
   // encode the data
   // Parse Javascript Object to params String
@@ -33,10 +36,14 @@ interface PostMessageInterface {
 
 class PostMessage implements PostMessageInterface {
   private tryTimes: number = 0
-  protocal: string
+  /** 协议超时时间, 默认为 `60s` */
+  timeout: number
+  /** 协议名,默认为`meetone://` */
+  private protocal: string
 
-  constructor(protocal?: string) {
-    this.protocal = protocal || 'meetone://'
+  constructor(config?: Config) {
+    this.protocal = (config && config.protocal) || 'meetone://'
+    this.timeout = (config && config.timeout) || 60 * 1000
   }
 
   /** generate message and send to client */
@@ -47,23 +54,25 @@ class PostMessage implements PostMessageInterface {
       | { protocal?: string | undefined; callbackId?: string | undefined; callback?: () => any }
       | undefined
   ): Promise<any> {
+    // browser
     if (typeof window !== 'undefined') {
+      // 自定义回调id情况
       if (options && options.callbackId) {
         // @ts-ignore
         window[options.callbackId] = options.callback || function() {}
         const message = this.generateMessage(path, payload, Object.assign(options))
-        console.log(message)
         this.sendMessage(message)
+        console.log(message)
         // @ts-ignore
         return window[options.callbackId]
       }
 
-      // browser
+      // 非自定义回调id情况
       return new Promise((resolve, reject) => {
         const callbackId = (options && options.callbackId) || this.getCallbackId()
         const message = this.generateMessage(path, payload, Object.assign({ callbackId }, options))
-        console.log(message)
         this.sendMessage(message)
+        console.log(message)
         // @ts-ignore
         window[callbackId] = function(result) {
           try {
@@ -71,15 +80,23 @@ class PostMessage implements PostMessageInterface {
           } catch (error) {
             reject(error)
           } finally {
-            if (options && options.callbackId) {
-              // 接收到客户端的回调后,将绑定的回调置为null,方便垃圾回收
-              // @ts-ignore
-              window[callbackId] = null
-            } else {
-              // 自定义callbackid 不执行上面操作
-            }
+            // 接收到客户端的回调后,将绑定的回调置为null,方便垃圾回收
+            // @ts-ignore
+            window[callbackId] = null
           }
         }
+
+        // TODO: 在客户端统一客户端都有回调callbackid前，不执行这个此操作（兼容性）
+        // 具体客户端会在哪个版本解决这个问题， 还没有确切的时间表
+        // if (clientVersion < '3.0.0') skip
+        // 超时时间设定
+        setTimeout(() => {
+          // @ts-ignore
+          if (typeof window[callbackId] === 'function') {
+            // @ts-ignore
+            window[callbackId]({ code: 998, type: 998, data: { message: '操作超时' } })
+          }
+        }, this.timeout)
       })
     } else {
       // nodejs
