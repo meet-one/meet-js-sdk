@@ -11,6 +11,16 @@ interface ClientResponse {
   code: number
   /** 类型值, 已弃用 */
   type: number
+  /** 客户端返回的数据 */
+  data: object
+}
+
+/** 包含错误信息的客户端回调 */
+interface ErrorMessage extends ClientResponse {
+  data: {
+    /** 错误信息 */
+    message: string
+  }
 }
 
 interface NetworkInfo extends ClientResponse {
@@ -29,4 +39,4 @@ interface NetworkInfo extends ClientResponse {
   }
 }
 
-export { NetworkInfo, ClientResponse, Config }
+export { NetworkInfo, ClientResponse, Config, ErrorMessage }

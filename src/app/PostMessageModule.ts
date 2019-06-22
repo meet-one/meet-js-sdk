@@ -4,42 +4,17 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:51
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-22 18:03:16
+ * @Last Modified time: 2019-06-23 01:18:59
  */
 
-import { Config } from './Interface'
+import { Config, ClientResponse, ErrorMessage } from './Interface'
 
-interface PostMessageInterface {
-  // encode the data
-  // Parse Javascript Object to params String
-  // JSON.stringify() -> encodeURIComponent() -> btoa()
-  encode(obj: object): string
-  // decode
-  decode(str: string): object
-  // Generate random callbackid
-  getCallbackId(): string
-  // PostMessage to client
-  sendMessage(url: string): void
-  // generate the message
-  generateMessage(
-    path: string,
-    payload: object,
-    options?: { protocal?: string; callbackId?: string }
-  ): string
-  // generate & send
-  generate(
-    path: string,
-    payload: object,
-    options?: { protocal?: string; callbackId?: string }
-  ): Promise<any>
-}
-
-class PostMessage implements PostMessageInterface {
+class PostMessage {
   private tryTimes: number = 0
-  /** 协议超时时间, 默认为 `60s` */
+  /** 协议超时时间, 默认为 `60000 ms` */
   timeout: number
   /** 协议名,默认为`meetone://` */
-  private protocal: string
+  protocal: string
 
   constructor(config?: Config) {
     this.protocal = (config && config.protocal) || 'meetone://'
@@ -74,8 +49,13 @@ class PostMessage implements PostMessageInterface {
         this.sendMessage(message)
         console.log(message)
         // @ts-ignore
-        window[callbackId] = function(result) {
+        window[callbackId] = function(result: ClientResponse) {
           try {
+            // 超时错误
+            if (result.code === 998) {
+              // @ts-ignore
+              throw new Error(result.data && result.data.message)
+            }
             resolve(result)
           } catch (error) {
             reject(error)
@@ -93,8 +73,13 @@ class PostMessage implements PostMessageInterface {
         setTimeout(() => {
           // @ts-ignore
           if (typeof window[callbackId] === 'function') {
+            let params: ErrorMessage = {
+              code: 998,
+              type: 998,
+              data: { message: '操作超时' }
+            }
             // @ts-ignore
-            window[callbackId]({ code: 998, type: 998, data: { message: '操作超时' } })
+            window[callbackId](params)
           }
         }, this.timeout)
       })

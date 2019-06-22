@@ -4,7 +4,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-22 18:03:28
+ * @Last Modified time: 2019-06-22 23:58:00
  */
 
 import Common from './app/Common'
@@ -17,7 +17,7 @@ const defaultConfig: Config = {
   timeout: 60 * 1000
 }
 
-class MeetWallet extends Common {
+export default class MeetWallet extends Common {
   /** current js-sdk version */
   version: string = VERSION
   /** protocal string */
@@ -69,14 +69,3 @@ class MeetWallet extends Common {
     }
   }
 }
-
-let meetwallet = new MeetWallet()
-
-// browsers
-if (typeof window !== 'undefined') {
-  // @ts-ignore
-  window.meetwallet = meetwallet
-}
-
-// nodejs
-export default meetwallet

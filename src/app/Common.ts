@@ -3,10 +3,10 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:18
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-22 17:22:29
+ * @Last Modified time: 2019-06-23 00:39:02
  */
 import PostMessageModule from './PostMessageModule'
-import { NetworkInfo, Config } from './Interface'
+import { NetworkInfo, Config, ClientResponse } from './Interface'
 
 export default class Common {
   bridge: PostMessageModule
@@ -15,8 +15,8 @@ export default class Common {
     this.bridge = new PostMessageModule(config)
   }
 
-  navigate(target: string, options?: object | undefined): void {
-    this.bridge.generate('app/navigate', { target, options })
+  navigate(target: string, options?: object | undefined): Promise<ClientResponse> {
+    return this.bridge.generate('app/navigate', { target, options })
   }
 
   /**
@@ -32,8 +32,8 @@ export default class Common {
    * @param title 分享标题
    * @param description 分享内容
    */
-  shareText(title: string, description: string): void {
-    this.bridge.generate('app/share', {
+  shareText(title: string, description: string): Promise<ClientResponse> {
+    return this.bridge.generate('app/share', {
       shareType: 1,
       title,
       description
@@ -44,8 +44,8 @@ export default class Common {
    * 分享图片
    * @param url 图片的URL地址
    */
-  shareImage(url: string): void {
-    this.bridge.generate('app/share', {
+  shareImage(url: string): Promise<ClientResponse> {
+    return this.bridge.generate('app/share', {
       shareType: 2,
       imgUrl: url
     })
@@ -56,8 +56,8 @@ export default class Common {
    * @param url 分享的连接地址
    * @param title 分享的标题
    */
-  shareLink(url: string, title?: string): void {
-    this.bridge.generate('app/share', {
+  shareLink(url: string, title?: string): Promise<ClientResponse> {
+    return this.bridge.generate('app/share', {
       shareType: 3,
       title,
       link: url
@@ -101,8 +101,8 @@ export default class Common {
    *
    * @param url 要跳转的目标地址
    */
-  webview(url: string, title?: string | undefined): void {
-    this.bridge.generate('app/webview', { url, title })
+  webview(url: string, title?: string | undefined): Promise<ClientResponse> {
+    return this.bridge.generate('app/webview', { url, title })
   }
 
   /**
