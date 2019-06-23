@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+    <title>E2E Testing - EOS</title>
+
+    <!-- necessary import -->
+    <script src="../../dist/meet-js-sdk.umd.js"></script>
+    <script src="https://cdn.bootcss.com/vConsole/3.3.0/vconsole.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/eosjs@16.0.9/lib/eos.js"></script>
+    <script src="./script.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+
+    <script>
+      var eos = meetwallet.blockchain.getEos()
+    </script>
+
+    <script>
+      transfer = async e => {
+        // let res = await meetwallet.blockchain.transfer()
+        // alert(res)
+        try {
+          let res = await eos.transaction({
+            actions: [
+              {
+                account: 'eosio.token',
+                name: 'transfer',
+                authorization: [
+                  {
+                    actor: 'johntrump123', // creator
+                    permission: 'active'
+                  }
+                ],
+                data: {
+                  from: 'johntrump123', // creator
+                  to: 'g.f.w',
+                  quantity: '0.0001 EOS',
+                  memo: 'transaction-bridge for scatter'
+                }
+              }
+            ],
+            options: {
+              broadcast: true
+            }
+          })
+          console.log(res)
+        } catch (error) {
+          console.log(error)
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Tests - EOS</h1>
+
+    <button onClick="runAllTests();">Run All Tests</button>
+
+    <div class="tests">
+      <div>
+        <h2>Transfer</h2>
+        <button onClick="transfer(event);">Test</button>
+      </div>
+    </div>
+  </body>
+</html>

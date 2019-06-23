@@ -4,11 +4,11 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:51
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-23 02:45:44
+ * @Last Modified time: 2019-06-24 00:17:55
  */
 
 import { Config, ClientResponse, ErrorMessage } from './Interface'
-import { defaultConfig } from './defaultConfig'
+import { defaultConfig } from './DefaultConfig'
 
 class PostMessage {
   private tryTimes: number = 0

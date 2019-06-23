@@ -4,23 +4,27 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-23 21:03:11
+ * @Last Modified time: 2019-06-23 22:30:00
  */
 
 import Common from './app/Common'
 import { Config } from './app/Interface'
-import { defaultConfig, version } from './app/defaultConfig'
+import { defaultConfig, version } from './app/DefaultConfig'
 
 import Network from './util/Network'
+import { EOS } from './blockchain/eos/eos'
+import Blockchian from './blockchain/BlockChain'
 
 /** The Meet JS SDK Library for MEET.ONE Client */
 export class MeetWallet extends Common {
   /** current js-sdk version */
   config: Config = defaultConfig
+  blockchain: Blockchian
 
   constructor(initConfig?: Config) {
     super(Object.assign({}, defaultConfig, initConfig, { version: version }))
     this.config = Object.assign({}, defaultConfig, initConfig, { version: version })
+    this.blockchain = new EOS(this)
     // for browsers
     if (typeof window !== 'undefined') {
       if (document.readyState !== 'loading') {
