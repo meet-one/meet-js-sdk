@@ -9,7 +9,7 @@ import builtins from 'rollup-plugin-node-builtins'
 
 const pkg = require('./package.json')
 const isProduction = process.env.NODE_ENV === 'production'
-const moduleName = 'MeetWallet'
+const moduleName = 'MeetJS'
 
 export default {
   // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
@@ -20,6 +20,7 @@ export default {
     {
       file: pkg.main,
       name: moduleName,
+      exports: 'named' /** Disable warning for default imports */,
       format: 'umd'
     },
 
@@ -27,6 +28,7 @@ export default {
     {
       file: pkg.module,
       name: moduleName,
+      exports: 'named' /** Disable warning for default imports */,
       format: 'es',
       sourcemap: true
     },
@@ -35,6 +37,7 @@ export default {
     {
       file: pkg.iife,
       name: moduleName,
+      exports: 'named' /** Disable warning for default imports */,
       format: 'iife'
     }
   ],

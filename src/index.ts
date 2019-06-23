@@ -4,14 +4,17 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-23 17:00:40
+ * @Last Modified time: 2019-06-23 21:03:11
  */
 
 import Common from './app/Common'
 import { Config } from './app/Interface'
 import { defaultConfig, version } from './app/defaultConfig'
 
-export default class MeetWallet extends Common {
+import Network from './util/Network'
+
+/** The Meet JS SDK Library for MEET.ONE Client */
+export class MeetWallet extends Common {
   /** current js-sdk version */
   config: Config = defaultConfig
 
@@ -32,7 +35,6 @@ export default class MeetWallet extends Common {
 
   /** init the  */
   private _init() {
-    let that = this
     // judge `addJSMessageHandleFlag` whatever it is 1 for preventing mutil listening
     if (window.document.body.getAttribute('addJSMessageHandleFlag') !== '1') {
       window.document.body.setAttribute('addJSMessageHandleFlag', '1')
@@ -58,3 +60,6 @@ export default class MeetWallet extends Common {
     }
   }
 }
+
+// export default MeetWallet
+export { Network as Http }

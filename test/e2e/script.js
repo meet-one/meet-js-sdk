@@ -1,6 +1,6 @@
 new VConsole()
 
-let meetwallet = new MeetWallet({ isDebug: true })
+let meetwallet = new MeetJS.MeetWallet({ isDebug: true })
 
 /** 每个测试用例之间等待的时间 */
 const WAIT_TIMES = 5000

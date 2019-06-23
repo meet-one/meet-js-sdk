@@ -1,4 +1,4 @@
-import MeetWallet from '../src/index'
+import { MeetWallet } from '../src/index'
 
 const CUSTOM_TIMEOUT = 10 * 1000
 const MORE_PROTOCAL = 'more://'

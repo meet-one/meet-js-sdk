@@ -3,7 +3,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:18
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-23 17:02:21
+ * @Last Modified time: 2019-06-23 21:05:05
  */
 import PostMessageModule from './PostMessageModule'
 import { NetworkInfo, Config, ClientResponse } from './Interface'
