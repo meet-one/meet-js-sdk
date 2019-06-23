@@ -43,4 +43,16 @@ interface NetworkInfo extends ClientResponse {
   }
 }
 
-export { NetworkInfo, ClientResponse, Config, ErrorMessage }
+enum requestDataType {
+  json = 'json',
+  html = 'html',
+  blob = 'blob'
+}
+interface NetworkArgs {
+  url: string
+  headers?: object
+  dataType?: requestDataType
+}
+
+export { NetworkInfo, ClientResponse, Config, ErrorMessage, NetworkArgs }
+export { requestDataType }

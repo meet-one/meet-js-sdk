@@ -3,16 +3,19 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:18
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-23 00:39:02
+ * @Last Modified time: 2019-06-23 17:02:21
  */
 import PostMessageModule from './PostMessageModule'
 import { NetworkInfo, Config, ClientResponse } from './Interface'
+import Network from '../util/Network'
 
 export default class Common {
   bridge: PostMessageModule
+  http: Network
 
   constructor(config?: Config) {
     this.bridge = new PostMessageModule(config)
+    this.http = new Network()
   }
 
   navigate(target: string, options?: object | undefined): Promise<ClientResponse> {

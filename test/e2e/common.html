@@ -14,6 +14,22 @@
     <link rel="stylesheet" href="./style.css" />
 
     <script>
+      testAxios = async e => {
+        executing(e)
+        try {
+          let response = await meetwallet.http.get('https://mainnet.meet.one/v1/chain/get_info')
+          if (
+            response.data.chain_id ===
+            'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
+          ) {
+            success(e)
+          } else {
+            failed(e)
+          }
+        } catch (error) {
+          failed(e)
+        }
+      }
       /** 因为这个方法没有回调 所以不知道执行的情况 */
       testWebview = async e => {
         executing(e)
@@ -105,6 +121,11 @@
     <button onClick="runAllTests();">Run All Tests</button>
 
     <div class="tests">
+      <div>
+        <h2>Request</h2>
+        <button onClick="testAxios(event);">Test</button>
+      </div>
+
       <div>
         <h2>webview()</h2>
         <button onClick="testWebview(event);">Test</button>
