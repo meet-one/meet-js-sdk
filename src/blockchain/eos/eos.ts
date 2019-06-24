@@ -5,7 +5,7 @@ import { ClientResponse } from '../../app/Interface'
 
 /** Eosjs signProvider params */
 interface EosSignProviderArgs {
-  buf: ArrayLike<string>
+  buf: ArrayLike<number>
   transaction: Transaction
 }
 
@@ -86,9 +86,9 @@ export class EOS extends Blockchian {
    *
    * 流程: 前端传入交易元数据, 客户端对其签名, 返回签名数据
    */
-  signProvider(buf: ArrayLike<string>, actions: object): any {
+  signProvider(buf: ArrayLike<number>, actions: object): any {
     return this.wallet.bridge.generate('eos/sign_provider', {
-      buf,
+      buf: Array.from(buf),
       transaction: actions
     })
   }
@@ -161,6 +161,7 @@ export class EOS extends Blockchian {
           kyc: false
         }
 
+        // 更新当前对象属性
         this.account = scatterIdentity
 
         return scatterIdentity
@@ -193,7 +194,7 @@ export class EOS extends Blockchian {
       Object.assign(eosOptions, {
         // todo: 从客户端返回
         httpEndpoint: 'https://mainnet.meet.one',
-        // chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
+        chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
         // 需要绑定上下文确保`this.eosSignProvider`指向本对象而非Eosjs
         signProvider: this.eosSignProvider.bind(this)
       })

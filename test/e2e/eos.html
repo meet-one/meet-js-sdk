@@ -46,7 +46,7 @@
               broadcast: true
             }
           })
-          if (res.code === 0) {
+          if (res.transaction_id) {
             success(e)
           } else {
             failed(e)
