@@ -1,10 +1,10 @@
 /*
  * The Meet JS SDK Library for Meet.ONE Client
- * This library is used to assist in generating the protocol URI of the client, and encapsulates some common protocols and methods.
+ * This library is used to assist in generating the protcol URI of the client, and encapsulates some common protocols and methods.
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-23 22:30:00
+ * @Last Modified time: 2019-06-24 13:50:14
  */
 
 import Common from './app/Common'
@@ -19,11 +19,22 @@ import Blockchian from './blockchain/BlockChain'
 export class MeetWallet extends Common {
   /** current js-sdk version */
   config: Config = defaultConfig
+  /**  */
   blockchain: Blockchian
 
   constructor(initConfig?: Config) {
     super(Object.assign({}, defaultConfig, initConfig, { version: version }))
     this.config = Object.assign({}, defaultConfig, initConfig, { version: version })
+    // 获取当前节点的信息
+    // this.network().then(res => {
+    //   // network config info
+    //   if (res.code === 0) {
+    //     // 新版参数
+    //     let { blockchain, chainId, host, port, protocol } = res.data
+    //     console.info(blockchain, chainId, host, port, protocol)
+    //   }
+    // })
+    this.updateNetwork()
     this.blockchain = new EOS(this)
     // for browsers
     if (typeof window !== 'undefined') {
@@ -35,6 +46,22 @@ export class MeetWallet extends Common {
     } else {
       // nodejs
     }
+  }
+
+  /** 获取客户端当前的网络信息(节点地址,节点Id, 节点端口, 节点类型) */
+  updateNetwork() {
+    this.network().then(res => {
+      // TODO:
+      if (res.code === 0) {
+        // 新版
+        let { blockchain, chainId, host, port, protocol } = res.data
+        console.info('new:', { blockchain, chainId, host, port, protocol })
+        // 旧版
+        let { name, domains, chain_id } = res.data
+        console.info('old:::', { name, domains, chain_id })
+        // 优先使用新版
+      }
+    })
   }
 
   /** init the  */

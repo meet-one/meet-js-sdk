@@ -24,7 +24,7 @@ class PostMessage {
     path: string,
     payload: object,
     options?:
-      | { protocal?: string | undefined; callbackId?: string | undefined; callback?: () => any }
+      | { protocol?: string | undefined; callbackId?: string | undefined; callback?: () => any }
       | undefined
   ): Promise<any> {
     // browser
@@ -128,16 +128,16 @@ class PostMessage {
   generateMessage(
     path: string,
     payload: object,
-    options?: { protocal?: string; callbackId?: string }
+    options?: { protocol?: string; callbackId?: string }
   ): string {
     let {
-      protocal = this.config.protocal || defaultConfig.protocal,
+      protocol = this.config.protocol || defaultConfig.protocol,
       callbackId = this.getCallbackId()
     } = options || {}
 
     let message = ''
     let payloadData = this.encode(payload)
-    message = protocal
+    message = protocol
       .concat(path)
       .concat('?params=')
       .concat(payloadData)

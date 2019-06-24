@@ -1,16 +1,17 @@
 import { MeetWallet } from '../src/index'
+import tool from '../src/util/Tool'
 
 const CUSTOM_TIMEOUT = 10 * 1000
-const MORE_PROTOCAL = 'more://'
+const MORE_PROTOCOL = 'more://'
 
-let meetwallet = new MeetWallet({ timeout: CUSTOM_TIMEOUT, isDebug: true })
-let morewallet = new MeetWallet({ protocal: MORE_PROTOCAL })
+let meetwallet = new MeetWallet({ timeout: CUSTOM_TIMEOUT })
+let morewallet = new MeetWallet({ protocol: MORE_PROTOCOL })
 
 describe('index.ts', () => {
   test('init meetwallet', () => {
-    expect(meetwallet.config.protocal === 'meetone://').toBeTruthy()
-    expect(morewallet.config.protocal === MORE_PROTOCAL).toBeTruthy()
-    expect(meetwallet.config.isDebug).toBeTruthy()
+    expect(meetwallet.config.protocol === 'meetone://').toBeTruthy()
+    expect(morewallet.config.protocol === MORE_PROTOCOL).toBeTruthy()
+    expect(meetwallet.config.isDebug).toBeFalsy()
     expect(morewallet.bridge.config.isDebug).toBeFalsy()
   })
 
@@ -23,7 +24,16 @@ describe('index.ts', () => {
     expect(meetwallet.bridge.config.timeout === CUSTOM_TIMEOUT).toBeTruthy()
   })
 
-  test('custom protocal', () => {
-    expect(morewallet.bridge.config.protocal === MORE_PROTOCAL).toBeTruthy()
+  test('custom protocol', () => {
+    expect(morewallet.bridge.config.protocol === MORE_PROTOCOL).toBeTruthy()
+  })
+})
+
+describe('util/Tool.ts', () => {
+  test('versionCompare', () => {
+    expect(tool.versionCompare('2.6.0', '2.5.89') == 1).toBeTruthy()
+    expect(tool.versionCompare('2.4.99', '2.5.89') == -1).toBeTruthy()
+    expect(tool.versionCompare('2.4.99.99', '2.4.99.99') == 0).toBeTruthy()
+    expect(tool.versionCompare('2.4', '2.4') == 0).toBeTruthy()
   })
 })

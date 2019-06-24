@@ -1,6 +1,6 @@
 import PostMessageModule from '../../src/app/PostMessageModule'
 
-let postMeesageModule = new PostMessageModule({ protocal: 'meetone://' })
+let postMeesageModule = new PostMessageModule({ protocol: 'meetone://' })
 
 describe('callbackid generate', () => {
   it('Start with meetjs_callback_', () => {
