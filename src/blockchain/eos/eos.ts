@@ -192,7 +192,7 @@ export class EOS extends Blockchian {
     // @ts-ignore
     return Eos(
       Object.assign(eosOptions, {
-        // todo: 从客户端返回
+        // TODO: 从客户端返回
         httpEndpoint: 'https://mainnet.meet.one',
         chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
         // 需要绑定上下文确保`this.eosSignProvider`指向本对象而非Eosjs
