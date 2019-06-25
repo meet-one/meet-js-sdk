@@ -1,5 +1,5 @@
 import { MeetWallet } from '../src/index'
-import tool from '../src/util/Tool'
+import Tool from '../src/util/Tool'
 
 const CUSTOM_TIMEOUT = 10 * 1000
 const MORE_PROTOCOL = 'more://'
@@ -31,9 +31,21 @@ describe('index.ts', () => {
 
 describe('util/Tool.ts', () => {
   test('versionCompare', () => {
-    expect(tool.versionCompare('2.6.0', '2.5.89') == 1).toBeTruthy()
-    expect(tool.versionCompare('2.4.99', '2.5.89') == -1).toBeTruthy()
-    expect(tool.versionCompare('2.4.99.99', '2.4.99.99') == 0).toBeTruthy()
-    expect(tool.versionCompare('2.4', '2.4') == 0).toBeTruthy()
+    expect(Tool.versionCompare('2.6.0', '2.5.89') == 1).toBeTruthy()
+    expect(Tool.versionCompare('2.4.99', '2.5.89') == -1).toBeTruthy()
+    expect(Tool.versionCompare('2.4.99.99', '2.4.99.99') == 0).toBeTruthy()
+    expect(Tool.versionCompare('2.4', '2.4') == 0).toBeTruthy()
+  })
+  test('getQueryString', () => {
+    let mockurl =
+      'http://192.168.8.191:8080/test/e2e/?meetone=true&meetone_version=2.5.0&system_name=iOS&lang=zh-Hans'
+    expect(Tool.getQueryString('meetone', mockurl) === 'true').toBeTruthy()
+    expect(Tool.getQueryString('meetone_version', mockurl) === '2.5.0').toBeTruthy()
+    expect(Tool.getQueryString('system_name', mockurl).toLowerCase() === 'ios').toBeTruthy()
+    expect(
+      Tool.getQueryString('lang', mockurl)
+        .toLowerCase()
+        .split(`-`)[0] === 'zh'
+    ).toBeTruthy()
   })
 })

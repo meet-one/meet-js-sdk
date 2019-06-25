@@ -4,62 +4,110 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-24 13:50:14
+ * @Last Modified time: 2019-06-25 16:29:16
  */
 
 import Common from './app/Common'
-import { Config } from './app/Interface'
+import { Config, AppInfo, NodeInfoResponse, NodeInfo } from './app/Interface'
 import { defaultConfig, version } from './app/DefaultConfig'
 
 import Network from './util/Network'
+import Tool from './util/Tool'
+
 import { EOS } from './blockchain/eos/eos'
+import { Blockchains } from './blockchain/SupportBlockchain'
+import { Cosmos } from './blockchain/cosmos/cosmos'
 import Blockchian from './blockchain/BlockChain'
 
 /** The Meet JS SDK Library for MEET.ONE Client */
 export class MeetWallet extends Common {
   /** current js-sdk version */
   config: Config = defaultConfig
-  /**  */
-  blockchain: Blockchian
+  appInfo: AppInfo = {
+    appVersion: '0.0.0',
+    language: 'en-US',
+    platform: '',
+    isMeetOne: false
+  }
+  nodeInfo: NodeInfo | undefined
+  blockchain: Blockchian | undefined
 
   constructor(initConfig?: Config) {
     super(Object.assign({}, defaultConfig, initConfig, { version: version }))
     this.config = Object.assign({}, defaultConfig, initConfig, { version: version })
-    // 获取当前节点的信息
-    // this.network().then(res => {
-    //   // network config info
-    //   if (res.code === 0) {
-    //     // 新版参数
-    //     let { blockchain, chainId, host, port, protocol } = res.data
-    //     console.info(blockchain, chainId, host, port, protocol)
-    //   }
-    // })
-    this.updateNetwork()
-    this.blockchain = new EOS(this)
     // for browsers
     if (typeof window !== 'undefined') {
       if (document.readyState !== 'loading') {
         this._init()
       } else {
-        document.addEventListener('DOMContentLoaded', this._init)
+        document.addEventListener('DOMContentLoaded', () => {
+          this._init()
+        })
       }
     } else {
       // nodejs
     }
   }
 
+  ready(callback: Function) {
+    super
+      .getAppInfo()
+      .then(res => {
+        if (res.code === 0) {
+          this.appInfo = res.data
+        }
+        return this.updateNetwork()
+      })
+      .then(res => {
+        if (res) {
+          let plugin
+          switch (res.blockchain) {
+            case Blockchains.EOS:
+            case Blockchains.MEETONE:
+            case Blockchains.BOS:
+              plugin = new EOS(this)
+              break
+            case Blockchains.COSMOS:
+              plugin = new Cosmos(this)
+              break
+            default:
+              break
+          }
+          this.blockchain = plugin
+          callback(this, plugin)
+        }
+      })
+  }
+
   /** 获取客户端当前的网络信息(节点地址,节点Id, 节点端口, 节点类型) */
-  updateNetwork() {
-    this.network().then(res => {
-      // TODO:
+  updateNetwork(): Promise<NodeInfo> {
+    return new Promise(async (resolve, reject) => {
+      let res = await this.getNodeInfo()
       if (res.code === 0) {
-        // 新版
-        let { blockchain, chainId, host, port, protocol } = res.data
-        console.info('new:', { blockchain, chainId, host, port, protocol })
-        // 旧版
-        let { name, domains, chain_id } = res.data
-        console.info('old:::', { name, domains, chain_id })
-        // 优先使用新版
+        const { appVersion = '0.0.0' } = this.appInfo
+        // 当前版本号大于或等于 2.5.0
+        if (Tool.versionCompare(appVersion, '2.5.0') >= 0) {
+          let { blockchain = '', chainId, host, port, protocol } = res.data
+          // 2.5.0版本以后
+          this.nodeInfo = {
+            blockchain: blockchain.toLowerCase(),
+            chainId,
+            host,
+            port,
+            protocol
+          }
+        } else {
+          let { name = '', domains, chain_id } = res.data
+          // 2.5.0版本之前
+          this.nodeInfo = {
+            blockchain: name.toLowerCase(),
+            chainId: chain_id,
+            host: domains[0]
+          }
+        }
+        resolve(this.nodeInfo)
+      } else {
+        reject(null)
       }
     })
   }
@@ -92,5 +140,4 @@ export class MeetWallet extends Common {
   }
 }
 
-// export default MeetWallet
-export { Network as Http }
+export { Network as http, Tool as util }

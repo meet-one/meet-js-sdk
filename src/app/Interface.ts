@@ -28,7 +28,19 @@ export interface ErrorMessage extends ClientResponse {
 }
 
 /** 客户端的节点信息 */
-export interface NetworkInfo extends ClientResponse {
+export interface NodeInfo {
+  /** 当前客户端选中的钱包类型 */
+  blockchain: string
+  /** 当前客户端连接的节点Host地址 */
+  host?: string
+  /** 当前客户端连接的节点端口号 */
+  port?: number
+  /** 当前客户端连接的节点协议名称 */
+  protocol?: string
+  /** 当前客户端返回的`chainid` */
+  chainId?: string
+}
+export interface NodeInfoResponse extends ClientResponse {
   /** 客户端回调回来的业务数据 */
   data: {
     /** 当前客户端选中的钱包类型 */
@@ -41,6 +53,7 @@ export interface NetworkInfo extends ClientResponse {
     protocol?: string
     /** 当前客户端返回的`chainid` */
     chainId?: string
+
     // 兼容低版本
     /** 当前客户端选中的钱包类型 */
     name: string
@@ -49,4 +62,22 @@ export interface NetworkInfo extends ClientResponse {
     /** 当前客户端返回的`chainid` */
     chain_id: string
   }
+}
+
+/**
+ * APP 信息
+ */
+export interface AppInfo {
+  /** 是否为MEETONE客户端内 */
+  isMeetOne: boolean
+  /** 当前应用版本号 */
+  appVersion: string
+  /** 当前平台 */
+  platform: string
+  /** 当前语系 */
+  language: string
+}
+
+export interface AppInfoResponse extends ClientResponse {
+  data: AppInfo
 }

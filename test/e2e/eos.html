@@ -11,148 +11,176 @@
     <script src="../../dist/meet-js-sdk.umd.js"></script>
     <script src="https://cdn.bootcss.com/vConsole/3.3.0/vconsole.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/eosjs@16.0.9/lib/eos.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/eosjs-ecc@4.0.4/lib/eosjs-ecc.min.js"
+      integrity="sha512-dYFDmK/d9r3/NCp6toLtfkwOjSMRBaEzaGAx1tfRItC0nsI0hVLERk05iNBQR7uDNI7ludYhcBI4vUiFHdjsTQ=="
+      crossorigin="anonymous"
+    ></script>
     <script src="./script.js"></script>
     <link rel="stylesheet" href="./style.css" />
 
     <script>
-      var eos = meetwallet.blockchain.getEos()
-    </script>
-
-    <script>
-      eosSignProvider = async e => {
-        executing(e)
-        try {
-          let account = meetwallet.blockchain.account
-          let res = await eos.transaction({
-            actions: [
-              {
-                account: 'eosio.token',
-                name: 'transfer',
-                authorization: [
-                  {
-                    actor: account.name, // creator
-                    permission: account.authority
+      let meetwallet = new MeetJS.MeetWallet({ isDebug: false }).ready((wallet, plugin) => {
+        let eos = plugin.getEos()
+        eosSignProvider = async e => {
+          executing(e)
+          try {
+            let account = plugin.account
+            let res = await eos.transaction({
+              actions: [
+                {
+                  account: 'eosio.token',
+                  name: 'transfer',
+                  authorization: [
+                    {
+                      actor: account.name, // creator
+                      permission: account.authority
+                    }
+                  ],
+                  data: {
+                    from: account.name, // creator
+                    to: 'g.f.w',
+                    quantity: '0.0001 EOS',
+                    memo: 'js-sdk signProvider'
                   }
-                ],
-                data: {
-                  from: account.name, // creator
-                  to: 'g.f.w',
-                  quantity: '0.0001 EOS',
-                  memo: 'js-sdk signProvider'
                 }
+              ],
+              options: {
+                broadcast: true
               }
-            ],
-            options: {
-              broadcast: true
-            }
-          })
-          if (res.transaction_id) {
-            success(e)
-          } else {
-            failed(e)
-          }
-        } catch (error) {
-          failed(e)
-          console.log(error)
-        }
-      }
-
-      transaction = async e => {
-        executing(e)
-        try {
-          let account = meetwallet.blockchain.account
-          let res = await meetwallet.blockchain.transaction(
-            [
-              {
-                account: 'eosio.token',
-                name: 'transfer',
-                authorization: [
-                  {
-                    actor: account.name, // creator
-                    permission: account.authority
-                  }
-                ],
-                data: {
-                  from: account.name, // creator
-                  to: 'g.f.w',
-                  quantity: '0.0001 EOS',
-                  memo: 'js-sdk transaction'
-                }
-              }
-            ],
-            'it works?',
-            undefined
-          )
-          if (res.code === 0 && res.data.transaction_id) {
-            success(e)
-          } else {
-            failed(e)
-          }
-        } catch (error) {
-          failed(e)
-          console.error(error)
-        }
-      }
-
-      transfer = async e => {
-        executing(e)
-        try {
-          let res = await meetwallet.blockchain.transfer(
-            'g.f.w',
-            0.0001,
-            'Transfer Memo',
-            'Order Info'
-          )
-          if (res.code === 0 && res.data.transaction_id) {
-            success(e)
-          } else {
-            failed(e)
-          }
-        } catch (error) {
-          failed(e)
-          console.error(error)
-        }
-      }
-
-      transferMEETONE = async e => {
-        executing(e)
-        try {
-          let res = await meetwallet.blockchain.transfer(
-            'g.f.w',
-            0.0001,
-            'Transfer Memo',
-            'Order Info',
-            { tokenName: 'MEETONE', contract: 'eosiomeetone' }
-          )
-          if (res.code === 0 && res.data.transaction_id) {
-            success(e)
-          } else {
-            failed(e)
-          }
-        } catch (error) {
-          failed(e)
-          console.error(error)
-        }
-      }
-
-      getIdentity = async e => {
-        executing(e)
-        try {
-          let res = await meetwallet.blockchain.getIdentity()
-          if (typeof meetwallet.blockchain.account !== 'undefined') {
-            if (meetwallet.blockchain.account.chainType.toLowerCase() === 'eos') {
+            })
+            if (res.transaction_id) {
               success(e)
-              return
+            } else {
+              failed(e)
             }
+          } catch (error) {
             failed(e)
-          } else {
-            failed(e)
+            console.log(error)
           }
-        } catch (error) {
-          failed(e)
-          console.error(error)
         }
-      }
+
+        transaction = async e => {
+          executing(e)
+          try {
+            let account = plugin.account
+            let res = await plugin.transaction(
+              [
+                {
+                  account: 'eosio.token',
+                  name: 'transfer',
+                  authorization: [
+                    {
+                      actor: account.name, // creator
+                      permission: account.authority
+                    }
+                  ],
+                  data: {
+                    from: account.name, // creator
+                    to: 'g.f.w',
+                    quantity: '0.0001 EOS',
+                    memo: 'js-sdk transaction'
+                  }
+                }
+              ],
+              'it works?',
+              undefined
+            )
+            if (res.code === 0 && res.data.transaction_id) {
+              success(e)
+            } else {
+              failed(e)
+            }
+          } catch (error) {
+            failed(e)
+            console.error(error)
+          }
+        }
+
+        transfer = async e => {
+          executing(e)
+          try {
+            let res = await plugin.transfer('g.f.w', 0.0001, 'Transfer Memo', 'Order Info')
+            if (res.code === 0 && res.data.transaction_id) {
+              success(e)
+            } else {
+              failed(e)
+            }
+          } catch (error) {
+            failed(e)
+            console.error(error)
+          }
+        }
+
+        transferMEETONE = async e => {
+          executing(e)
+          try {
+            let res = await plugin.transfer('g.f.w', 0.0001, 'Transfer Memo', 'Order Info', {
+              tokenName: 'MEETONE',
+              contract: 'eosiomeetone'
+            })
+            if (res.code === 0 && res.data.transaction_id) {
+              success(e)
+            } else {
+              failed(e)
+            }
+          } catch (error) {
+            failed(e)
+            console.error(error)
+          }
+        }
+
+        /**
+         * 获取当前账号信息, 初始化 EOS 模块时会默认调用
+         */
+        getIdentity = async e => {
+          executing(e)
+          try {
+            let res = await plugin.getIdentity()
+            if (typeof plugin.account !== 'undefined') {
+              if (plugin.account.chainType.toLowerCase() === 'eos') {
+                success(e)
+                return
+              }
+              failed(e)
+            } else {
+              failed(e)
+            }
+          } catch (error) {
+            failed(e)
+            console.error(error)
+          }
+        }
+
+        sign = async e => {
+          executing(e)
+          try {
+            let account = plugin.account
+            let res = await plugin.sign('芝士就是力量')
+            if (res.code === 0) {
+              if (res.data.signature) {
+                console.log(res.data.signature)
+                // SIG_K1_K3sbCi8HEnByYibTgD3jeCVc2fLfWVgbmgsz4vFzqKDf3EwzA2ucUhw5PhCszcCLFj5cBE9Bgqi2PGAPxa5YLz7ao49NgN
+                let validate = eosjs_ecc.verify(
+                  res.data.signature,
+                  '芝士就是力量',
+                  account.publicKey
+                )
+                if (validate) {
+                  success(e)
+                } else {
+                  failed(e)
+                }
+              }
+            } else {
+              failed(e)
+            }
+          } catch (error) {
+            failed(e)
+            console.error(error)
+          }
+        }
+      })
     </script>
   </head>
   <body>
@@ -164,6 +192,10 @@
       <div>
         <h2>getIdentity</h2>
         <button onClick="getIdentity(event);">Test</button>
+      </div>
+      <div>
+        <h2>sign</h2>
+        <button onClick="sign(event);">Test</button>
       </div>
       <div>
         <h2>EosSignProvider</h2>

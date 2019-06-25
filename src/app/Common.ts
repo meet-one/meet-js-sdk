@@ -3,11 +3,12 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:18
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-24 12:47:26
+ * @Last Modified time: 2019-06-25 16:25:07
  */
 import PostMessageModule from './PostMessageModule'
-import { NetworkInfo, Config, ClientResponse } from './Interface'
+import { NodeInfoResponse, Config, ClientResponse, AppInfoResponse } from './Interface'
 import Network from '../util/Network'
+import Tool from '../util/Tool'
 
 export default class Common {
   bridge: PostMessageModule
@@ -18,14 +19,39 @@ export default class Common {
     this.http = new Network()
   }
 
+  /**
+   * 获取当前APP客户端信息
+   */
+  getAppInfo(): Promise<AppInfoResponse> {
+    // 我们的客户端都会在URL上注入相关的版本信息,所以可以不通过协议来实现获取当前APP客户端信息
+    // return this.bridge.generate('app/info', {})
+    return new Promise((resolve, reject) => {
+      if (typeof window !== 'undefined') {
+        let response: AppInfoResponse = {
+          code: 0,
+          type: 0,
+          data: {
+            appVersion: Tool.getQueryString('meetone_version') || '0.0.0',
+            language: Tool.getQueryString('lang') || 'en-US',
+            platform: Tool.getQueryString('system_name'),
+            isMeetOne: Tool.getQueryString('meetone') === 'true'
+          }
+        }
+        resolve(response)
+      } else {
+        reject()
+      }
+    })
+  }
+
   navigate(target: string, options?: object | undefined): Promise<ClientResponse> {
     return this.bridge.generate('app/navigate', { target, options })
   }
 
   /**
-   * Get current wallet network information
+   * Get current wallet node network information
    */
-  network(): Promise<NetworkInfo> {
+  getNodeInfo(): Promise<NodeInfoResponse> {
     return this.bridge.generate('eos/network', {})
   }
 
@@ -67,35 +93,35 @@ export default class Common {
     })
   }
 
-  /**
-   * TODO: 分享文件
-   */
-  shareFile(): void {
-    throw new Error('Method not implemented.')
-  }
+  // /**
+  //  * TODO: 分享文件
+  //  */
+  // shareFile(): void {
+  //   throw new Error('Method not implemented.')
+  // }
 
-  /**
-   * TODO: 分享口令
-   */
-  shareCode(
-    appName: string,
-    description: string,
-    url: string,
-    banner_url: string,
-    icon_url: string
-  ): void {
-    throw new Error('Method not implemented.')
-    // this.bridge.generate('app/share', {
-    //   shareType: 5,
-    //   description,
-    //   options: {
-    //     name: appName,
-    //     target: url,
-    //     banner: banner_url,
-    //     icon: icon_url
-    //   }
-    // })
-  }
+  // /**
+  //  * TODO: 分享口令
+  //  */
+  // shareCode(
+  //   appName: string,
+  //   description: string,
+  //   url: string,
+  //   banner_url: string,
+  //   icon_url: string
+  // ): void {
+  //   throw new Error('Method not implemented.')
+  //   this.bridge.generate('app/share', {
+  //     shareType: 5,
+  //     description,
+  //     options: {
+  //       name: appName,
+  //       target: url,
+  //       banner: banner_url,
+  //       icon: icon_url
+  //     }
+  //   })
+  // }
 
   /**
    * Path: `app/webview`

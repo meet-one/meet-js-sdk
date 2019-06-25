@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="./style.css" />
 
     <script>
+      let meetwallet = new MeetJS.MeetWallet({ isDebug: false })
       testAxios = async e => {
         executing(e)
         try {
@@ -56,18 +57,45 @@
         }
       }
 
+      /** 获取网络信息 */
       testNetwork = async e => {
         executing(e)
         try {
-          let result = await meetwallet.network()
+          let result = await meetwallet.getNodeInfo()
           alert(JSON.stringify(result))
-          success(e)
+          if (result.code === 0) {
+            success(e)
+          } else {
+            failed(e)
+          }
           return true
         } catch (error) {
           failed(e)
         }
       }
 
+      /** 获取应用信息 */
+      getAppInfo = async e => {
+        executing(e)
+        try {
+          let result = await meetwallet.getAppInfo()
+          alert(JSON.stringify(result))
+          if (result.code === 0) {
+            if (result.data.isMeetOne) {
+              success(e)
+            } else {
+              failed(e)
+            }
+          } else {
+            failed(e)
+          }
+          return true
+        } catch (error) {
+          failed(e)
+        }
+      }
+
+      /** 跳转 */
       testNavigate = async (e, target) => {
         executing(e)
         try {
@@ -142,6 +170,11 @@
       </div>
 
       <div>
+        <h2>get App info</h2>
+        <button onClick="getAppInfo(event);">Test</button>
+      </div>
+
+      <div>
         <h2>navigate to EOSNodeVoteProxyPage</h2>
         <button onClick="testNavigate(event, 'EOSNodeVoteProxyPage');">Test</button>
       </div>
@@ -164,16 +197,6 @@
       <div>
         <h2>Share Link</h2>
         <button onClick="testShare(event, 3);">Test</button>
-      </div>
-
-      <div>
-        <h2>Share File</h2>
-        <button onClick="testShare(event, 4);">Test</button>
-      </div>
-
-      <div>
-        <h2>Share Code</h2>
-        <button onClick="testShare(event, 5);">Test</button>
       </div>
     </div>
   </body>

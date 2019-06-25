@@ -4,11 +4,13 @@
 
 ## Introduction
 
+### ClientResponse
+
 客户端回调统一格式:
 
 ```js
 ClientResponse = {
-  /** 状态码, 0为成功 */
+  /** 状态码, 0为成功; 998为超时, 999为用户取消 */
   code: number
   /** 类型值, 已弃用 */
   type: number
@@ -16,6 +18,24 @@ ClientResponse = {
   data: object
 }
 ```
+
+### Common Module
+
+#### appInfo():Promise<AppInfoResponse>
+
+#### navigate(target: string, options?: object | undefined): Promise<ClientResponse>
+
+#### network(): Promise<NetworkInfo>
+
+#### shareText(title: string, description: string): Promise<ClientResponse>
+
+#### shareImage(url: string): Promise<ClientResponse>
+
+#### shareLink(url: string, title?: string): Promise<ClientResponse>
+
+#### webview(url: string, title?: string | undefined): Promise<ClientResponse>
+
+#### webviewMenu(rightTitle: string, callback: () => any): void
 
 ### EOS Module
 
@@ -33,7 +53,7 @@ ClientResponse = {
 
 #### getIdentity()
 
-初始化 EOS 模块时会默认调用
+获取当前账号信息, 初始化 EOS 模块时会默认调用
 
 #### getEos(eosOptions?: EosConfig):Eosjs
 
@@ -66,3 +86,9 @@ npm run test:watch
 cd meet-js-sdk/
 npm run start && npx http-server -o -c-1
 ```
+
+## CHANGE LOG
+
+- 1.0.0
+  - 库进行超时判断,如果客户端没有响应,则默认返回一个超时信息(`ErrorMessage:{code: 998, type: 998, data: {message: '操作超时'}}`)
+  -

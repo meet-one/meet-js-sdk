@@ -3,7 +3,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-20 14:45:28
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-23 21:32:52
+ * @Last Modified time: 2019-06-25 16:13:32
  */
 
 /**
@@ -11,6 +11,8 @@
  */
 export const Blockchains = {
   EOS: 'eos',
+  MEETONE: 'meetone',
+  BOS: 'bos',
   ETH: 'eth',
   COSMOS: 'cosmos'
 }

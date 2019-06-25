@@ -3,10 +3,40 @@
  * @Author: JohnTrump
  * @Date: 2019-06-24 15:10:54
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-24 16:29:39
+ * @Last Modified time: 2019-06-25 16:23:39
  */
 class Tool {
   constructor() {}
+  /**
+   * 获取URL上的参数
+   *
+   * 注意返回的字段都是**string**类型
+   *
+   * eg: `getQueryString("lang")`
+   *
+   * @param name 需要查询的字段
+   * @param url window.location.href
+   *
+   */
+  getQueryString(name: string, url?: string): string {
+    if (typeof window !== 'undefined') {
+      let reg = new RegExp('[?&]' + name + '=([^&#]*)', 'i')
+      // let res = window.location.href.match(reg)
+      let res: string[] | null = []
+      if (typeof url === 'string') {
+        res = url.match(reg)
+      } else {
+        res = window.location.href.match(reg)
+      }
+      if (res && res.length > 1) {
+        return decodeURIComponent(res[1])
+      }
+      return ''
+    } else {
+      // nodejs
+      throw new Error('Not support nodejs')
+    }
+  }
   /**
    * 比较版本号
    * @param v1 版本1
@@ -16,7 +46,7 @@ class Tool {
    * 如果版本1 < 版本2 则返回-1
    * 如果版本1 = 版本2 则返回0
    */
-  versionCompare(v1: string, v2: string): number | undefined {
+  versionCompare(v1: string, v2: string): number {
     if (typeof v1 !== 'string' || typeof v2 !== 'string') {
       throw new Error('Params Error, params(v1, v2) must be string')
     }
@@ -34,7 +64,7 @@ class Tool {
         return parseInt(a)
       })
     let arrLen = Math.max(v1arr.length, v2arr.length)
-    let result
+    let result = 0
 
     // 循环比较版本号
     for (let i = 0; i < arrLen; i++) {
