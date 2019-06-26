@@ -37,8 +37,11 @@
           try {
             // BUG: 已知问题
             let result = await wallet.webview('https://meet.one', 'MEET.ONE | HOME')
-            alert(result)
-            success(e)
+            if (result.code === 0) {
+              success(e)
+            } else {
+              failed(e)
+            }
             return true
           } catch (error) {
             failed(e)
@@ -100,7 +103,11 @@
           executing(e)
           try {
             let result = await wallet.navigate(target)
-            success(e)
+            if (result.code === 0) {
+              success(e)
+            } else {
+              failed(e)
+            }
             return true
           } catch (error) {
             failed(e)
@@ -135,7 +142,11 @@
                 'https://static.ethte.com/MeetPC/2018_11_15/6923/eoscharge.png'
               )
             }
-            success(e)
+            if (result.code === 0) {
+              success(e)
+            } else {
+              failed(e)
+            }
             return true
           } catch (error) {
             failed(e)

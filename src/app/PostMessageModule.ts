@@ -54,7 +54,8 @@ class PostMessage {
             // 错误处理
             if (result.code === 998 || result.code === 404) {
               // @ts-ignore
-              throw new Error(result.data && result.data.message)
+              // throw new Error(result.data && result.data.message)
+              reject(result)
             }
 
             resolve(result)
