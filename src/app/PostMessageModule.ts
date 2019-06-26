@@ -51,11 +51,12 @@ class PostMessage {
         window[callbackId] = function(result: ClientResponse) {
           that.config.isDebug && console.debug(`window[${callbackId}]:`, result)
           try {
-            // 超时错误
-            if (result.code === 998) {
+            // 错误处理
+            if (result.code === 998 || result.code === 404) {
               // @ts-ignore
               throw new Error(result.data && result.data.message)
             }
+
             resolve(result)
           } catch (error) {
             reject(error)
