@@ -4,11 +4,11 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-25 16:29:16
+ * @Last Modified time: 2019-06-26 11:52:30
  */
 
 import Common from './app/Common'
-import { Config, AppInfo, NodeInfoResponse, NodeInfo } from './app/Interface'
+import { Config, AppInfo, NodeInfo } from './app/Interface'
 import { defaultConfig, version } from './app/DefaultConfig'
 
 import Network from './util/Network'
@@ -25,11 +25,11 @@ export class MeetWallet extends Common {
   config: Config = defaultConfig
   appInfo: AppInfo = {
     appVersion: '0.0.0',
-    language: 'en-US',
+    language: '',
     platform: '',
     isMeetOne: false
   }
-  nodeInfo: NodeInfo | undefined
+  nodeInfo!: NodeInfo
   blockchain: Blockchian | undefined
 
   constructor(initConfig?: Config) {
@@ -73,10 +73,13 @@ export class MeetWallet extends Common {
             default:
               break
           }
+          document.addEventListener('meetoneLoaded', () => {
+            callback(this, this.blockchain)
+          })
           this.blockchain = plugin
-          callback(this, plugin)
         }
       })
+    return this
   }
 
   /** 获取客户端当前的网络信息(节点地址,节点Id, 节点端口, 节点类型) */
@@ -84,7 +87,7 @@ export class MeetWallet extends Common {
     return new Promise(async (resolve, reject) => {
       let res = await this.getNodeInfo()
       if (res.code === 0) {
-        const { appVersion = '0.0.0' } = this.appInfo
+        const { appVersion = '2.5.0' } = this.appInfo
         // 当前版本号大于或等于 2.5.0
         if (Tool.versionCompare(appVersion, '2.5.0') >= 0) {
           let { blockchain = '', chainId, host, port, protocol } = res.data
@@ -97,8 +100,8 @@ export class MeetWallet extends Common {
             protocol
           }
         } else {
+          // 2.5.0版本之前, 返回的字段只有这些
           let { name = '', domains, chain_id } = res.data
-          // 2.5.0版本之前
           this.nodeInfo = {
             blockchain: name.toLowerCase(),
             chainId: chain_id,

@@ -4,7 +4,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:51
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-24 00:17:55
+ * @Last Modified time: 2019-06-26 10:54:11
  */
 
 import { Config, ClientResponse, ErrorMessage } from './Interface'
@@ -85,9 +85,7 @@ class PostMessage {
       })
     } else {
       // nodejs
-      return new Promise((resolve, reject) => {
-        // TODO:
-      })
+      return new Promise((resolve, reject) => {})
     }
   }
 
@@ -167,13 +165,11 @@ class PostMessage {
             this.tryTimes = ++this.tryTimes
           }, 1000)
         } else {
-          // TODO: 前端监控机制
           console.error('post url timeout(60 times):', url)
         }
       }
     } else {
       // nodejs
-      // TODO:
       throw new Error('Method not implemented.')
     }
   }

@@ -2,6 +2,7 @@ import { MeetWallet } from '../../index'
 import Blockchian from '../BlockChain'
 import { Blockchains } from '../SupportBlockchain'
 import { ClientResponse } from '../../app/Interface'
+import Tool from '../../util/Tool'
 
 /** Eosjs signProvider params */
 interface EosSignProviderArgs {
@@ -78,7 +79,13 @@ export class EOS extends Blockchian {
 
   constructor(wallet: MeetWallet) {
     super(Blockchains.EOS, wallet)
-    this.getIdentity()
+    this.getIdentity().then(resolve => {
+      if (resolve) {
+        if (typeof window !== 'undefined') document.dispatchEvent(new CustomEvent('meetoneLoaded'))
+      } else {
+        // 没有登录账号
+      }
+    })
   }
 
   /**
@@ -129,6 +136,10 @@ export class EOS extends Blockchian {
 
   /** 获取当前账号信息 */
   getIdentity(): Promise<Account> {
+    if (this.account) {
+      // 如果当前账号信息不为空, 可直接返回
+      return new Promise(resolve => resolve(this.account))
+    }
     return this.identity().then(res => {
       if (res.code === 0) {
         // 原生客户端将权限permission回传给了网页，所以这里可以不单纯的使用isOwner/isActive来设置权限了
@@ -157,7 +168,7 @@ export class EOS extends Blockchian {
         }
         let scatterIdentity = {
           authority: authority,
-          chainType: 'EOS', // TODO: 从当前网络节点来获取
+          chainType: this.wallet.nodeInfo.blockchain,
           name: res.data.account,
           publicKey: res.data.publicKey,
           isHardware: false,
@@ -176,31 +187,48 @@ export class EOS extends Blockchian {
 
   /**
    * 获取Eosjs实例
+   * @param Eos 获取EOSJS当前对象
    * @param eosOptions 附加的EosConfig配置[可选]
    */
-  getEos(eosOptions?: EosConfig) {
+  getEos(Eos?: object, eosOptions?: EosConfig) {
     // eosOptions 未定义
     if (!!!eosOptions) {
       eosOptions = {}
     }
-    // TODO: 优先判断是否有传入Eos实例,如果没有的话,在
-    // TODO: 优先判断全局变量中是否有名为EOS的变量,如果都没有的话,则报错
-    // @ts-ignore
-    if (typeof Eos == 'undefined') {
-      throw new Error('Eos.js not found!')
+    if (typeof Eos === 'undefined') {
+      // 优先判断是否有传入Eos实例,如果没有的话,在判断全局变量中是否有名为EOS的变量,如果都没有的话,则报错
+      // @ts-ignore
+      if (typeof window.Eos == 'undefined') {
+        throw new Error('Eos.js not found!')
+      } else {
+        // @ts-ignore
+        Eos = window.Eos
+      }
     }
-    // if(typeof this.node == 'undefined'){
-    //   throw new Error('EOS chain need to initialize.');
-    // }
+
+    // 版本号大于等于2.5.0的版本, 优先使用客户端返回的节点信息
+    let { appVersion } = this.wallet.appInfo
+    let { chainId, host, port, protocol } = this.wallet.nodeInfo
+    let nodeInfo = {}
+    if (Tool.versionCompare(appVersion, '2.5.0') >= 0) {
+      nodeInfo = {
+        httpEndpoint: `${protocol}://${host}:${port}`,
+        chainId: chainId
+      }
+    } else {
+      // 版本号低于2.5.0的版本,因为节点信息缺失端口与协议类型,所以优先使用开发者从`eosOptions`中指定的节点
+    }
+
     // @ts-ignore
     return Eos(
-      Object.assign(eosOptions, {
-        // TODO: 从客户端返回
-        httpEndpoint: 'https://mainnet.meet.one',
-        chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
-        // 需要绑定上下文确保`this.eosSignProvider`指向本对象而非Eosjs
-        signProvider: this.eosSignProvider.bind(this)
-      })
+      Object.assign(
+        eosOptions,
+        {
+          // 需要绑定上下文确保`this.eosSignProvider`指向本对象而非Eosjs
+          signProvider: this.eosSignProvider.bind(this)
+        },
+        nodeInfo
+      )
     )
   }
 

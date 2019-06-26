@@ -3,7 +3,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:18
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-25 16:25:07
+ * @Last Modified time: 2019-06-26 10:26:58
  */
 import PostMessageModule from './PostMessageModule'
 import { NodeInfoResponse, Config, ClientResponse, AppInfoResponse } from './Interface'
@@ -31,7 +31,8 @@ export default class Common {
           code: 0,
           type: 0,
           data: {
-            appVersion: Tool.getQueryString('meetone_version') || '0.0.0',
+            // TODO: 在协议还没有完成前 先Mock当前版本为2.5.0
+            appVersion: Tool.getQueryString('meetone_version') || '2.5.0',
             language: Tool.getQueryString('lang') || 'en-US',
             platform: Tool.getQueryString('system_name'),
             isMeetOne: Tool.getQueryString('meetone') === 'true'
@@ -94,14 +95,14 @@ export default class Common {
   }
 
   // /**
-  //  * TODO: 分享文件
+  //  * 分享文件
   //  */
   // shareFile(): void {
   //   throw new Error('Method not implemented.')
   // }
 
   // /**
-  //  * TODO: 分享口令
+  //  * 分享口令
   //  */
   // shareCode(
   //   appName: string,

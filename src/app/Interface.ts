@@ -53,7 +53,6 @@ export interface NodeInfoResponse extends ClientResponse {
     protocol?: string
     /** 当前客户端返回的`chainid` */
     chainId?: string
-
     // 兼容低版本
     /** 当前客户端选中的钱包类型 */
     name: string
