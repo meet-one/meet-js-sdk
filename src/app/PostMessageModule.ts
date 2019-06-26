@@ -66,22 +66,23 @@ class PostMessage {
           }
         }
 
-        // TODO: 在客户端统一客户端都有回调callbackid前，不执行这个此操作（兼容性）
-        // 具体客户端会在哪个版本解决这个问题， 还没有确切的时间表
-        // if (clientVersion < '3.0.0') skip
-        // 超时时间设定
-        setTimeout(() => {
-          // @ts-ignore
-          if (typeof window[callbackId] === 'function') {
-            let params: ErrorMessage = {
-              code: 998,
-              type: 998,
-              data: { message: '操作超时' }
-            }
+        // @ts-ignore
+        if (window.isTimeoutHandle) {
+          // 超时时间设定, 因为不能比较好的兼容旧版本,只能在新版本发包前,往已有的JS中注入全局变量 `isTimeoutHandle`来兼容
+          // TODO: meet-inject set `isTimeoutHandle`
+          setTimeout(() => {
             // @ts-ignore
-            window[callbackId](params)
-          }
-        }, this.config.timeout)
+            if (typeof window[callbackId] === 'function') {
+              let params: ErrorMessage = {
+                code: 998,
+                type: 998,
+                data: { message: '操作超时' }
+              }
+              // @ts-ignore
+              window[callbackId](params)
+            }
+          }, this.config.timeout)
+        }
       })
     } else {
       // nodejs

@@ -75,6 +75,8 @@ export interface AppInfo {
   platform: string
   /** 当前语系 */
   language: string
+  /** APP信息是否来自URL中(旧版) */
+  isFromUrl?: boolean
 }
 
 export interface AppInfoResponse extends ClientResponse {

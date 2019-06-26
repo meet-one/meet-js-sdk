@@ -22,6 +22,7 @@
     <script>
       let meetwallet = new MeetJS.MeetWallet({ isDebug: false }).ready((wallet, plugin) => {
         let eos = plugin.getEos()
+        console.log(eos)
         eosSignProvider = async e => {
           executing(e)
           try {

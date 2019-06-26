@@ -24,25 +24,34 @@ export default class Common {
    */
   getAppInfo(): Promise<AppInfoResponse> {
     // 我们的客户端都会在URL上注入相关的版本信息,所以可以不通过协议来实现获取当前APP客户端信息
-    // return this.bridge.generate('app/info', {})
-    return new Promise((resolve, reject) => {
-      if (typeof window !== 'undefined') {
-        let response: AppInfoResponse = {
-          code: 0,
-          type: 0,
-          data: {
-            // TODO: 在协议还没有完成前 先Mock当前版本为2.5.0
-            appVersion: Tool.getQueryString('meetone_version') || '2.5.0',
-            language: Tool.getQueryString('lang') || 'en-US',
-            platform: Tool.getQueryString('system_name'),
-            isMeetOne: Tool.getQueryString('meetone') === 'true'
+    // @ts-ignore
+    return Promise.race([
+      this.bridge.generate('app/info', {}),
+      // 这是为了兼容旧版本, 旧版本没有这个协议,所以需要模拟
+      new Promise((resolve, reject) => {
+        if (typeof window !== 'undefined') {
+          let response: AppInfoResponse = {
+            code: 0,
+            type: 0,
+            data: {
+              // 客户端在一级页面跳转二级页面后, 不会将现有的url参数(包含当前客户端的信息)带过去, 因此最好不采用这种形式获取
+              // 只有在低版本(<2.6.0)没有支持`app/info`的协议下,才会尝试从URL中读取
+              appVersion: Tool.getQueryString('meetone_version'),
+              language: Tool.getQueryString('lang'),
+              platform: Tool.getQueryString('system_name'),
+              isMeetOne: Tool.getQueryString('meetone') === 'true',
+              isFromUrl: true
+            }
           }
+          setTimeout(() => {
+            resolve(response)
+            // TODO: 设置更长的时间
+          }, 1 * 1000)
+        } else {
+          reject()
         }
-        resolve(response)
-      } else {
-        reject()
-      }
-    })
+      })
+    ])
   }
 
   navigate(target: string, options?: object | undefined): Promise<ClientResponse> {
@@ -93,36 +102,6 @@ export default class Common {
       link: url
     })
   }
-
-  // /**
-  //  * 分享文件
-  //  */
-  // shareFile(): void {
-  //   throw new Error('Method not implemented.')
-  // }
-
-  // /**
-  //  * 分享口令
-  //  */
-  // shareCode(
-  //   appName: string,
-  //   description: string,
-  //   url: string,
-  //   banner_url: string,
-  //   icon_url: string
-  // ): void {
-  //   throw new Error('Method not implemented.')
-  //   this.bridge.generate('app/share', {
-  //     shareType: 5,
-  //     description,
-  //     options: {
-  //       name: appName,
-  //       target: url,
-  //       banner: banner_url,
-  //       icon: icon_url
-  //     }
-  //   })
-  // }
 
   /**
    * Path: `app/webview`

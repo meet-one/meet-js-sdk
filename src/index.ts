@@ -23,13 +23,11 @@ import Blockchian from './blockchain/BlockChain'
 export class MeetWallet extends Common {
   /** current js-sdk version */
   config: Config = defaultConfig
-  appInfo: AppInfo = {
-    appVersion: '0.0.0',
-    language: '',
-    platform: '',
-    isMeetOne: false
-  }
+  /** 当前应用信息 */
+  appInfo: AppInfo | undefined
+  /** 当前应用节点信息 */
   nodeInfo!: NodeInfo
+
   blockchain: Blockchian | undefined
 
   constructor(initConfig?: Config) {
@@ -53,9 +51,7 @@ export class MeetWallet extends Common {
     super
       .getAppInfo()
       .then(res => {
-        if (res.code === 0) {
-          this.appInfo = res.data
-        }
+        if (res.code === 0) this.appInfo = res.data
         return this.updateNetwork()
       })
       .then(res => {
@@ -87,26 +83,13 @@ export class MeetWallet extends Common {
     return new Promise(async (resolve, reject) => {
       let res = await this.getNodeInfo()
       if (res.code === 0) {
-        const { appVersion = '2.5.0' } = this.appInfo
-        // 当前版本号大于或等于 2.5.0
-        if (Tool.versionCompare(appVersion, '2.5.0') >= 0) {
-          let { blockchain = '', chainId, host, port, protocol } = res.data
-          // 2.5.0版本以后
-          this.nodeInfo = {
-            blockchain: blockchain.toLowerCase(),
-            chainId,
-            host,
-            port,
-            protocol
-          }
-        } else {
-          // 2.5.0版本之前, 返回的字段只有这些
-          let { name = '', domains, chain_id } = res.data
-          this.nodeInfo = {
-            blockchain: name.toLowerCase(),
-            chainId: chain_id,
-            host: domains[0]
-          }
+        let { name, blockchain, domains, chain_id, chainId, host, port, protocol } = res.data
+        this.nodeInfo = {
+          blockchain: blockchain ? blockchain.toLowerCase() : name.toLowerCase(), // Chain类型
+          chainId: chainId || chain_id, // blockchain chainId
+          host: host ? host : domains[0], // hostname
+          port: port ? port : 80, // 端口, 默认为80
+          protocol: protocol ? protocol : 'http' // 协议, 默认为 http
         }
         resolve(this.nodeInfo)
       } else {

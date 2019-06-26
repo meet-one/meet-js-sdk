@@ -103,6 +103,8 @@ export class EOS extends Blockchian {
   /**
    * 为Eosjs提供签名
    *
+   * @param signargs signProvider参数
+   *
    * 调用`this.signProvider`, 参数由Eosjs提供(buf: ArrayLike<string>, actions: object)
    */
   eosSignProvider(signargs: EosSignProviderArgs): string {
@@ -111,7 +113,6 @@ export class EOS extends Blockchian {
         if (res.code === 0) {
           return res.data.signature
         }
-        throw new Error('eosSignProvider failed')
       }
     )
   }
@@ -124,8 +125,8 @@ export class EOS extends Blockchian {
     return this.wallet.bridge.generate('eos/signature', {
       data: signData,
       whatfor: 'what for what',
-      isHash: false, // TODO: 不知道这两个参数有什么不同
-      isArbitrary: false // TODO: 不知道这两个参数有什么不同
+      isHash: false, // WTF: 不知道这两个参数有什么不同
+      isArbitrary: false // WTF: 不知道这两个参数有什么不同
     })
   }
 
@@ -190,7 +191,7 @@ export class EOS extends Blockchian {
    * @param Eos 获取EOSJS当前对象
    * @param eosOptions 附加的EosConfig配置[可选]
    */
-  getEos(Eos?: object, eosOptions?: EosConfig) {
+  getEos(eosOptions?: EosConfig, Eos?: object) {
     // eosOptions 未定义
     if (!!!eosOptions) {
       eosOptions = {}
@@ -206,29 +207,15 @@ export class EOS extends Blockchian {
       }
     }
 
-    // 版本号大于等于2.5.0的版本, 优先使用客户端返回的节点信息
-    let { appVersion } = this.wallet.appInfo
     let { chainId, host, port, protocol } = this.wallet.nodeInfo
-    let nodeInfo = {}
-    if (Tool.versionCompare(appVersion, '2.5.0') >= 0) {
-      nodeInfo = {
-        httpEndpoint: `${protocol}://${host}:${port}`,
-        chainId: chainId
-      }
-    } else {
-      // 版本号低于2.5.0的版本,因为节点信息缺失端口与协议类型,所以优先使用开发者从`eosOptions`中指定的节点
-    }
-
     // @ts-ignore
     return Eos(
-      Object.assign(
-        eosOptions,
-        {
-          // 需要绑定上下文确保`this.eosSignProvider`指向本对象而非Eosjs
-          signProvider: this.eosSignProvider.bind(this)
-        },
-        nodeInfo
-      )
+      Object.assign(eosOptions, {
+        httpEndpoint: `${protocol}://${host}:${port}`,
+        chainId: chainId,
+        // 需要绑定上下文确保`this.eosSignProvider`指向本对象而非Eosjs
+        signProvider: this.eosSignProvider.bind(this)
+      })
     )
   }
 
@@ -259,7 +246,15 @@ export class EOS extends Blockchian {
     })
   }
 
-  /** 发起事务 */
+  /**
+   * 发起事务
+   *
+   * 参考 https://github.com/EOSIO/eosjs#sending-a-transaction
+   *
+   * @param actions 事务
+   * @param description 事务描述
+   * @param options [可选] 配置选项
+   * */
   transaction(
     actions = [],
     description = '',

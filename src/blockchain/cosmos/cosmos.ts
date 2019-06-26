@@ -6,6 +6,13 @@ import { ClientResponse } from '../../app/Interface'
 export class Cosmos extends BlockChain {
   constructor(wallet: MeetWallet) {
     super(Blockchains.COSMOS, wallet)
-    console.log('cosmos')
+  }
+
+  // TODO:
+  /**
+   * 获取当前账号信息 - 原信息返回
+   */
+  identity(): Promise<any> {
+    return this.wallet.bridge.generate('cosmos/account_info', {})
   }
 }
