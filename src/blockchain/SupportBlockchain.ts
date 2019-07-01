@@ -3,7 +3,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-20 14:45:28
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-25 16:13:32
+ * @Last Modified time: 2019-07-01 11:21:49
  */
 
 /**
@@ -11,7 +11,9 @@
  */
 export const Blockchains = {
   EOS: 'eos',
-  MEETONE: 'meetone',
+  // iOS端与Android端没有统一, 所以取两个
+  MEETONE: 'meet.one', // iOS
+  MEETONE_2: 'meetone', // Android
   BOS: 'bos',
   ETH: 'eth',
   COSMOS: 'cosmos'

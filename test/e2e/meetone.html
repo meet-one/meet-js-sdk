@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
-    <title>E2E Testing - EOS</title>
+    <title>E2E Testing - MEET.ONE</title>
 
     <!-- necessary import -->
     <script src="../../dist/meet-js-sdk.umd.js"></script>
@@ -22,8 +22,7 @@
     <script>
       let meetwallet = new MeetJS.MeetWallet({ isDebug: false }).ready((wallet, plugin) => {
         let eos = plugin.getEos()
-        console.log(eos)
-        eosSignProvider = async e => {
+        signProvider = async e => {
           executing(e)
           try {
             let account = plugin.account
@@ -40,8 +39,8 @@
                   ],
                   data: {
                     from: account.name, // creator
-                    to: 'g.f.w',
-                    quantity: '0.0001 EOS',
+                    to: '5ovoloerxa.m',
+                    quantity: '0.0001 MEETONE',
                     memo: 'js-sdk signProvider'
                   }
                 }
@@ -68,6 +67,7 @@
             let res = await plugin.transaction(
               [
                 {
+                  // TODO: 替换合约地址
                   account: 'eosio.token',
                   name: 'transfer',
                   authorization: [
@@ -78,8 +78,8 @@
                   ],
                   data: {
                     from: account.name, // creator
-                    to: 'g.f.w',
-                    quantity: '0.0001 EOS',
+                    to: '5ovoloerxa.m',
+                    quantity: '0.0001 MEETONE',
                     memo: 'js-sdk transaction'
                   }
                 }
@@ -101,25 +101,7 @@
         transfer = async e => {
           executing(e)
           try {
-            let res = await plugin.transfer('g.f.w', 0.0001, 'Transfer Memo', 'Order Info')
-            if (res.code === 0 && res.data.transaction_id) {
-              success(e)
-            } else {
-              failed(e)
-            }
-          } catch (error) {
-            failed(e)
-            console.error(error)
-          }
-        }
-
-        transferMEETONE = async e => {
-          executing(e)
-          try {
-            let res = await plugin.transfer('g.f.w', 0.0001, 'Transfer Memo', 'Order Info', {
-              tokenName: 'MEETONE',
-              contract: 'eosiomeetone'
-            })
+            let res = await plugin.transfer('5ovoloerxa.m', 0.0001, 'Transfer Memo', 'Order Info')
             if (res.code === 0 && res.data.transaction_id) {
               success(e)
             } else {
@@ -138,8 +120,9 @@
           executing(e)
           try {
             let res = await plugin.getIdentity()
+            console.log(res)
             if (typeof plugin.account !== 'undefined') {
-              if (plugin.account.chainType.toLowerCase() === 'eos') {
+              if (plugin.account.chainType.toLowerCase() === 'meet.one') {
                 success(e)
                 return
               }
@@ -185,7 +168,7 @@
     </script>
   </head>
   <body>
-    <h1>Tests - EOS</h1>
+    <h1>Tests - MEET.ONE</h1>
 
     <button onClick="runAllTests();">Run All Tests</button>
 
@@ -200,7 +183,7 @@
       </div>
       <div>
         <h2>eos/sign_provider</h2>
-        <button onClick="eosSignProvider(event);">Test</button>
+        <button onClick="signProvider(event);">Test</button>
       </div>
       <div>
         <h2>eos/transaction</h2>
@@ -209,10 +192,6 @@
       <div>
         <h2>eos/transfer</h2>
         <button onClick="transfer(event);">Test</button>
-      </div>
-      <div>
-        <h2>eos/transfer</h2>
-        <button onClick="transferMEETONE(event);">Test</button>
       </div>
     </div>
   </body>

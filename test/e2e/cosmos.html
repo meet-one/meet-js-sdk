@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>E2E Testing - COSMOS</title>
+    <!-- necessary import -->
+    <script src="../../dist/meet-js-sdk.umd.js"></script>
+    <script src="https://cdn.bootcss.com/vConsole/3.3.0/vconsole.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/eosjs@16.0.9/lib/eos.js"></script>
+    <script src="./script.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+
+    <script>
+      let meetwallet = new MeetJS.MeetWallet({ isDebug: true })
+      let cosmos = new MeetJS.Cosmos(meetwallet, 'cosmos1jwgdw55ssd3zdwfgm20sh6pc5kmwzfqdg84m4g')
+
+      getIdentity = async e => {
+        executing(e)
+        try {
+          let res = await cosmos.getIdentity()
+          alert(JSON.stringify(res))
+          if (res.address) {
+            success(e)
+          } else {
+            failed(e)
+          }
+        } catch (error) {
+          failed(e)
+          console.log(error)
+        }
+      }
+
+      transfer = async e => {
+        executing(e)
+        try {
+          let res = await cosmos.transfer({
+            // ratio: 1000000
+            amount: 300,
+            fee: 400,
+            gas: 200,
+            memo: 'js-sdk test',
+            to: 'cosmos1yqg3xm8ftxm96trp2j3jyknfm4t7tlgwxpgtth'
+          })
+          alert(JSON.stringify(res))
+          if (true) {
+            success(e)
+          } else {
+            failed(e)
+          }
+        } catch (error) {
+          failed(e)
+          console.log(error)
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Tests - Cosmos</h1>
+
+    <button onClick="runAllTests();">Run All Tests</button>
+    <div class="tests">
+      <div>
+        <h2>cosmos/account_info</h2>
+        <button onClick="getIdentity(event);">Test</button>
+      </div>
+
+      <div>
+        <h2>transfer</h2>
+        <button onClick="transfer(event);">Test</button>
+      </div>
+    </div>
+  </body>
+</html>

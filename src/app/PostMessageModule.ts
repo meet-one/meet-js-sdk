@@ -69,9 +69,9 @@ class PostMessage {
         }
 
         // @ts-ignore
-        if (window.isTimeoutHandle) {
-          // 超时时间设定, 因为不能比较好的兼容旧版本,只能在新版本发包前,往已有的JS中注入全局变量 `isTimeoutHandle`来兼容
-          // TODO: meet-inject set `isTimeoutHandle`
+        if (window.isSupportMeetoneSdk) {
+          // 超时时间设定, 因为不能比较好的兼容旧版本,只能在新版本发包前,往已有的JS中注入全局变量 `isSupportMeetoneSdk`来兼容
+          // meet-inject set `isSupportMeetoneSdk`
           setTimeout(() => {
             // @ts-ignore
             if (typeof window[callbackId] === 'function') {

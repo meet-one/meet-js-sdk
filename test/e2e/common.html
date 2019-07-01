@@ -103,14 +103,22 @@
           executing(e)
           try {
             let result = await wallet.navigate(target)
-            if (result.code === 0) {
+            if (target == 'EOSNodeVoteProxyPage') {
+              // 存在的目标
+              if (result.code === 0) {
+                success(e)
+              } else {
+                failed(e)
+              }
+            }
+          } catch (error) {
+            // 测试跳转到不存在的目标
+            if (target === 'undefined') {
+              alert(error.data.message)
               success(e)
             } else {
               failed(e)
             }
-            return true
-          } catch (error) {
-            failed(e)
           }
         }
 
@@ -130,10 +138,8 @@
               // 连接
               result = await wallet.shareLink('https://meet.one')
             } else if (type === 4) {
-              // 文件 TODO:
               result = await wallet.shareFile()
             } else if (type === 5) {
-              // 口令 TODO:
               result = await wallet.shareCode(
                 '麒麟红包',
                 '我给你发了一个红包，快来领取吧！',
@@ -193,7 +199,7 @@
 
       <div>
         <h2>navigate to undefined route</h2>
-        <button onClick="testNavigate(event, 'Home');">Test</button>
+        <button onClick="testNavigate(event, 'undefined');">Test</button>
       </div>
 
       <div>

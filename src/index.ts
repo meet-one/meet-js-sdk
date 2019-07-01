@@ -4,7 +4,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-26 11:52:30
+ * @Last Modified time: 2019-07-01 14:00:02
  */
 
 import Common from './app/Common'
@@ -27,7 +27,7 @@ export class MeetWallet extends Common {
   appInfo: AppInfo | undefined
   /** 当前应用节点信息 */
   nodeInfo!: NodeInfo
-
+  /** 当前链 */
   blockchain: Blockchian | undefined
 
   constructor(initConfig?: Config) {
@@ -60,6 +60,7 @@ export class MeetWallet extends Common {
           switch (res.blockchain) {
             case Blockchains.EOS:
             case Blockchains.MEETONE:
+            case Blockchains.MEETONE_2:
             case Blockchains.BOS:
               plugin = new EOS(this)
               break
@@ -126,4 +127,4 @@ export class MeetWallet extends Common {
   }
 }
 
-export { Network as http, Tool as util }
+export { Network as http, Tool as util, EOS as Eos, Cosmos }

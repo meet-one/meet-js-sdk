@@ -66,7 +66,6 @@ export default class Common {
   }
 
   /**
-   *
    * 分享文本
    * @param title 分享标题
    * @param description 分享内容
@@ -104,10 +103,7 @@ export default class Common {
   }
 
   /**
-   * Path: `app/webview`
-   *
    * Open a webview in client
-   *
    * @param url 要跳转的目标地址
    */
   webview(url: string, title?: string | undefined): Promise<ClientResponse> {
@@ -115,10 +111,7 @@ export default class Common {
   }
 
   /**
-   * Path: `app/webview/right_menu`:
-   *
    * Define the webview menu(right button) and callback
-   *
    * @param rightTitle 自定义菜单名称
    * @param callback 点击菜单回调函数
    */
@@ -129,4 +122,12 @@ export default class Common {
       { callback, callbackId: 'meet_callback_webview_right_menu' }
     )
   }
+
+  // 一些协议设想
+  // close() 关闭当前页面(页面堆栈的最顶层pop)
+  // back() 后退操作
+  // fullScreen() 全屏显示页面
+  // rollHorizontal(horizontal: boolean = false) 旋转显示
+  // popGestureRecognizerEnable(enable: boolean = true) 禁止iOS自带的左滑手势返回，据说Android无效?是因为Andorid实现上有困难吗
+  // forwardNavigationGesturesEnable(enable: boolean = true) 禁止webview自带的左滑手势触发goback,据说Android无效?是因为Andorid实现上有困难吗
 }
