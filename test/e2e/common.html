@@ -114,8 +114,8 @@
           } catch (error) {
             // 测试跳转到不存在的目标
             if (target === 'undefined') {
-              alert(error.data.message)
               success(e)
+              alert(error.data.message)
             } else {
               failed(e)
             }

@@ -4,7 +4,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:51
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-26 10:54:11
+ * @Last Modified time: 2019-07-02 11:26:09
  */
 
 import { Config, ClientResponse, ErrorMessage } from './Interface'

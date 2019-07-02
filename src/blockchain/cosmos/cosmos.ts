@@ -49,42 +49,6 @@ interface Coin {
   denom: string
   amount: string
 }
-
-interface TxQuery {
-  txhash: string
-  height: string
-  tx: {
-    type: string
-    value: StdTx
-  }
-  gas_wanted: string
-  gas_used: string
-  tags: KVPair[]
-}
-
-interface KVPair {
-  key: string
-  value: string
-}
-
-interface StdTx {
-  msg: string
-  fee: {
-    amount: Coin[]
-    gas: string
-  }
-  memo: string
-  signature: {
-    signature: string
-    pub_key: {
-      type: string
-      value: string
-    }
-    account_number: string
-    sequence: string
-  }
-}
-
 interface Account {
   address: string
   coins: Coin[]
@@ -148,12 +112,18 @@ export class Cosmos extends BlockChain {
   /** 节点信息 */
   nodeInfo!: NodeInfo
 
-  constructor(wallet: MeetWallet, cosmosAddress?: string) {
+  constructor(
+    wallet: MeetWallet,
+    cosmosAddress?: string,
+    network?: { protocol: string; host: string; port: number }
+  ) {
     super(Blockchains.COSMOS, wallet)
     this.http = new Network(
       {
         baseURL: wallet.nodeInfo
           ? `${wallet.nodeInfo.protocol}://${wallet.nodeInfo.host}:${wallet.nodeInfo.port}`
+          : network
+          ? `${network.protocol}://${network.host}:${network.port}`
           : DEFAULT_RPC_URL
       },
       this.wallet.config.isDebug
@@ -164,6 +134,7 @@ export class Cosmos extends BlockChain {
         this.getIdentity().then(res => {
           if (res) {
             if (typeof window !== 'undefined') {
+              // 初始化完成
               document.dispatchEvent(new CustomEvent('meetoneLoaded'))
             }
           }
@@ -176,11 +147,11 @@ export class Cosmos extends BlockChain {
    * 获取当前账号信息
    * 如果当前实例对象有地址, 则直接去链上查询
    * 如果没有指定地址,发起协议获取客户端当前的地址
-   * @param foreUpdate 默认为false, 如果为false,则从当前缓存中获取
+   * @param forceUpdate 默认为false, 如果为false,则从当前缓存中获取
    * @returns {Account} 当前账号信息
    */
-  getIdentity(foreUpdate?: false): Promise<Account> {
-    if (!foreUpdate && this.account) {
+  getIdentity(forceUpdate?: boolean): Promise<Account> {
+    if (!forceUpdate && this.account) {
       // 如果当前账号信息不为空, 可直接返回
       return new Promise(resolve => resolve(this.account))
     }
@@ -308,8 +279,51 @@ export class Cosmos extends BlockChain {
    * Push a Transaction
    * @param transaction txBroadcast (body)	The tx must be a signed StdTx.
    */
-  broadcast(transaction: object): Promise<AxiosResponse> {
-    return this.http.post(`${push_transaction}`, { txBroadcast: transaction })
+  broadcast(transaction: { tx: object; mode: string }): Promise<AxiosResponse> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let res = await this.http.post(`${push_transaction}`, {
+          tx: transaction.tx,
+          mode: transaction.mode
+        })
+        if (res.status === 200) {
+          resolve(res.data)
+        } else {
+          reject({
+            code: res.status,
+            message: res.statusText
+          })
+        }
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
+  /**
+   * 生成StdMsg通用方法
+   */
+  generateMsg(
+    fee: { amount: number | string; denom?: string; gas: number | string },
+    msgs: Array<{ type: string; value: object }>,
+    memo?: string
+  ): signObject {
+    return {
+      account_number: this.account.account_number,
+      chain_id: this.nodeInfo.network,
+      sequence: this.account.sequence,
+      memo: memo || '',
+      fee: {
+        amount: [
+          {
+            amount: String(fee.amount),
+            denom: fee.denom || 'uatom'
+          }
+        ],
+        gas: String(fee.gas)
+      },
+      msgs
+    }
   }
 
   /**
@@ -319,7 +333,8 @@ export class Cosmos extends BlockChain {
    * @returns {StdTx}
    */
   async signProvider(signObject: signObject, modeType = 'sync') {
-    console.info(signObject)
+    // `this.account.account_number` 与 `this.account.sequence` 需要同步链上,否则签名不成功
+    await this.getIdentity(true)
     let res = await this.wallet.bridge.generate('cosmos/sign_provider', {
       signObject
     })
@@ -330,7 +345,6 @@ export class Cosmos extends BlockChain {
         fee: signObject.fee,
         signatures: [
           {
-            // TODO: 客户端返回
             signature: res.data.signature,
             pub_key: this.account.public_key
           }
@@ -349,38 +363,25 @@ export class Cosmos extends BlockChain {
    * example: https://stargate.cosmos.network/txs/A9FA53852753EC40207858F74CF08B5D91773851A22E86EAFD36F94EECE91BBF
    */
   transfer(input: TransferArgs) {
-    let signObject: signObject = {
-      account_number: this.account.account_number,
-      chain_id: this.nodeInfo.network,
-      sequence: this.account.sequence,
-      fee: {
-        amount: [
-          {
-            amount: String(input.fee),
-            denom: input.feeDenom || 'uatom'
-          }
-        ],
-        gas: String(input.gas)
-      },
-      memo: input.memo || '',
-      msgs: [
+    let signObject = this.generateMsg(
+      { amount: input.fee, denom: input.feeDenom, gas: input.gas },
+      [
         {
           type: 'cosmos-sdk/MsgSend',
-          value: [
-            {
-              amount: [
-                {
-                  amount: String(input.amount),
-                  denom: input.amountDenom || 'uatom'
-                }
-              ],
-              from_address: input.from || this.account.address,
-              to_address: input.to
-            }
-          ]
+          value: {
+            amount: [
+              {
+                amount: String(input.amount),
+                denom: input.amountDenom || 'uatom'
+              }
+            ],
+            from_address: input.from || this.account.address,
+            to_address: input.to
+          }
         }
-      ]
-    }
+      ],
+      input.memo
+    )
     return this.signProvider(signObject)
   }
 
@@ -389,21 +390,9 @@ export class Cosmos extends BlockChain {
    * example: https://stargate.cosmos.network/txs/0AA58ED1E47915703E06DF46291D664031F889AEBC7A1AA747339A015901B62C
    */
   delegate(input: DelegateMsgs) {
-    let signObject: signObject = {
-      account_number: this.account.account_number,
-      chain_id: this.nodeInfo.network,
-      sequence: this.account.sequence,
-      fee: {
-        amount: [
-          {
-            amount: String(input.fee),
-            denom: input.feeDenom || 'uatom'
-          }
-        ],
-        gas: String(input.gas)
-      },
-      memo: input.memo,
-      msgs: [
+    let signObject = this.generateMsg(
+      { amount: input.fee, denom: input.feeDenom, gas: input.gas },
+      [
         {
           type: 'cosmos-sdk/MsgDelegate',
           value: {
@@ -417,8 +406,9 @@ export class Cosmos extends BlockChain {
             validator_address: input.validator_address
           }
         }
-      ]
-    }
+      ],
+      input.memo
+    )
     return this.signProvider(signObject)
   }
 
@@ -427,21 +417,9 @@ export class Cosmos extends BlockChain {
    * example: https://stargate.cosmos.network/txs/040099262917BBAA9A9AFDD54D448D51A085C4D86DDEB7CA70754E9BA9507AE4
    */
   undelegate(input: DelegateMsgs) {
-    let signObject: signObject = {
-      account_number: this.account.account_number,
-      chain_id: this.nodeInfo.network,
-      sequence: this.account.sequence,
-      fee: {
-        amount: [
-          {
-            amount: String(input.fee),
-            denom: input.feeDenom || 'uatom'
-          }
-        ],
-        gas: String(input.gas)
-      },
-      memo: input.memo || '',
-      msgs: [
+    let signObject = this.generateMsg(
+      { amount: input.fee, denom: input.feeDenom, gas: input.gas },
+      [
         {
           type: 'cosmos-sdk/MsgUndelegate',
           value: {
@@ -455,8 +433,9 @@ export class Cosmos extends BlockChain {
             validator_address: input.validator_address
           }
         }
-      ]
-    }
+      ],
+      input.memo
+    )
     return this.signProvider(signObject)
   }
 
@@ -471,21 +450,9 @@ export class Cosmos extends BlockChain {
     depositor: string
     proposal_id: string
   }) {
-    let signObject: signObject = {
-      account_number: this.account.account_number,
-      chain_id: this.nodeInfo.network,
-      sequence: this.account.sequence,
-      fee: {
-        amount: [
-          {
-            amount: String(input.fee),
-            denom: input.feeDenom || 'uatom'
-          }
-        ],
-        gas: String(input.gas)
-      },
-      memo: input.memo || '',
-      msgs: [
+    let signObject = this.generateMsg(
+      { amount: input.fee, denom: input.feeDenom, gas: input.gas },
+      [
         {
           type: 'cosmos-sdk/MsgDeposit',
           value: {
@@ -499,15 +466,14 @@ export class Cosmos extends BlockChain {
             proposal_id: String(input.proposal_id)
           }
         }
-      ]
-    }
+      ],
+      input.memo
+    )
     return this.signProvider(signObject)
   }
 
   /** 投票 */
   vote(input: {
-    amount: number | string
-    amountDenom?: string
     fee: number | string
     feeDenom: string
     gas: number | string
@@ -516,21 +482,9 @@ export class Cosmos extends BlockChain {
     proposal_id: string | number
     voter: string
   }) {
-    let signObject: signObject = {
-      account_number: this.account.account_number,
-      chain_id: this.nodeInfo.network,
-      sequence: this.account.sequence,
-      memo: input.memo || '',
-      fee: {
-        amount: [
-          {
-            amount: String(input.fee),
-            denom: input.feeDenom || 'uatom'
-          }
-        ],
-        gas: String(input.gas)
-      },
-      msgs: [
+    let signObject = this.generateMsg(
+      { amount: input.fee, denom: input.feeDenom, gas: input.gas },
+      [
         {
           type: 'cosmos-sdk/MsgVote',
           value: {
@@ -539,8 +493,9 @@ export class Cosmos extends BlockChain {
             voter: input.voter
           }
         }
-      ]
-    }
+      ],
+      input.memo
+    )
     return this.signProvider(signObject)
   }
 
