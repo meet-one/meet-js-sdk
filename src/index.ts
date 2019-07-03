@@ -4,11 +4,11 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-07-01 14:00:02
+ * @Last Modified time: 2019-07-02 20:49:25
  */
 
 import Common from './app/Common'
-import { Config, AppInfo, NodeInfo } from './app/Interface'
+import { Config, AppInfo, NodeInfo, AppInfoResponse } from './app/Interface'
 import { defaultConfig, version } from './app/DefaultConfig'
 
 import Network from './util/Network'
@@ -24,7 +24,7 @@ export class MeetWallet extends Common {
   /** current js-sdk version */
   config: Config = defaultConfig
   /** 当前应用信息 */
-  appInfo: AppInfo | undefined
+  appInfo!: AppInfo
   /** 当前应用节点信息 */
   nodeInfo!: NodeInfo
   /** 当前链 */
@@ -47,40 +47,76 @@ export class MeetWallet extends Common {
     }
   }
 
-  ready(callback: Function) {
-    super
-      .getAppInfo()
-      .then(res => {
-        if (res.code === 0) this.appInfo = res.data
-        return this.updateNetwork()
-      })
-      .then(res => {
-        if (res) {
-          let plugin
-          switch (res.blockchain) {
-            case Blockchains.EOS:
-            case Blockchains.MEETONE:
-            case Blockchains.MEETONE_2:
-            case Blockchains.BOS:
-              plugin = new EOS(this)
-              break
-            case Blockchains.COSMOS:
-              plugin = new Cosmos(this)
-              break
-            default:
-              break
+  /**
+   * 获取当前APP客户端信息
+   * @param forceUpdate 默认为false, 如果为false,则从当前缓存中获取
+   */
+  getAppInfo(forceUpdate?: boolean): Promise<AppInfoResponse> {
+    if (!forceUpdate && this.appInfo) {
+      // 如果当前账号信息不为空, 可直接返回
+      return new Promise(resolve => resolve({ code: 0, type: 0, data: this.appInfo }))
+    }
+    // 我们的客户端都会在URL上注入相关的版本信息,所以可以不通过协议来实现获取当前APP客户端信息
+    // @ts-ignore
+    return Promise.race([
+      this.bridge.generate('app/info', {}),
+      // 这是为了兼容旧版本, 旧版本没有这个协议,所以需要模拟
+      new Promise((resolve, reject) => {
+        if (typeof window !== 'undefined') {
+          let response: AppInfoResponse = {
+            code: 0,
+            type: 0,
+            data: {
+              // 客户端在一级页面跳转二级页面后, 不会将现有的url参数(包含当前客户端的信息)带过去, 因此最好不采用这种形式获取
+              // 只有在低版本(<2.6.0)没有支持`app/info`的协议下,才会尝试从URL中读取
+              appVersion: Tool.getQueryString('meetone_version'),
+              language: Tool.getQueryString('lang'),
+              platform: Tool.getQueryString('system_name'),
+              isMeetOne: Tool.getQueryString('meetone') === 'true',
+              isFromUrl: true
+            }
           }
-          document.addEventListener('meetoneLoaded', () => {
-            callback(this, this.blockchain)
-          })
-          this.blockchain = plugin
+          setTimeout(() => {
+            resolve(response)
+          }, 10 * 1000)
+        } else {
+          reject()
         }
       })
-    return this
+    ])
   }
 
-  /** 获取客户端当前的网络信息(节点地址,节点Id, 节点端口, 节点类型) */
-  updateNetwork(): Promise<NodeInfo> {
+  /**
+   * 加载网络
+   */
+  load(plugin: Blockchian) {
+    return new Promise(resolve => {
+      document.addEventListener('meetoneLoaded', () => {
+        this.blockchain = plugin
+        resolve({ wallet: this, plugin: this.blockchain })
+      })
+
+      this.updateNetwork()
+        .then(() => {
+          plugin.init()
+        })
+        .catch(error => {
+          alert(error)
+        })
+    })
+  }
+
+  /**
+   * 获取客户端当前的网络信息(节点地址,节点Id, 节点端口, 节点类型)
+   * @param forceUpdate 默认为false, 如果为false,则从当前缓存中获取
+   * */
+
+  updateNetwork(forceUpdate?: boolean): Promise<NodeInfo> {
+    if (!forceUpdate && this.nodeInfo) {
+      // 如果当前账号信息不为空, 可直接返回
+      return new Promise(resolve => resolve(this.nodeInfo))
+    }
+
     return new Promise(async (resolve, reject) => {
       let res = await this.getNodeInfo()
       if (res.code === 0) {
@@ -101,6 +137,14 @@ export class MeetWallet extends Common {
 
   /** init the  */
   private _init() {
+    // 获取客户端信息
+    this.getAppInfo().then(res => {
+      if (res.code === 0) this.appInfo = res.data
+    })
+
+    /** 获取当前节点信息 */
+    this.getNodeInfo()
+
     // judge `addJSMessageHandleFlag` whatever it is 1 for preventing mutil listening
     if (window.document.body.getAttribute('addJSMessageHandleFlag') !== '1') {
       window.document.body.setAttribute('addJSMessageHandleFlag', '1')

@@ -14,151 +14,151 @@
     <link rel="stylesheet" href="./style.css" />
 
     <script>
-      var a = new MeetJS.MeetWallet({ isDebug: false }).ready((wallet, plugin) => {
-        testAxios = async e => {
-          executing(e)
-          try {
-            let response = await wallet.http.get('https://mainnet.meet.one/v1/chain/get_info')
-            if (
-              response.data.chain_id ===
-              'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
-            ) {
+      wallet = new MeetJS.MeetWallet()
+
+      testAxios = async e => {
+        executing(e)
+        try {
+          let response = await wallet.http.get('https://mainnet.meet.one/v1/chain/get_info')
+          if (
+            response.data.chain_id ===
+            'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
+          ) {
+            success(e)
+          } else {
+            failed(e)
+          }
+        } catch (error) {
+          failed(e)
+        }
+      }
+      /** 因为这个方法没有回调 所以不知道执行的情况 */
+      testWebview = async e => {
+        executing(e)
+        try {
+          // BUG: 已知问题
+          let result = await wallet.webview('https://meet.one', 'MEET.ONE | HOME')
+          if (result.code === 0) {
+            success(e)
+          } else {
+            failed(e)
+          }
+          return true
+        } catch (error) {
+          failed(e)
+        }
+      }
+
+      testWebviewMenu = e => {
+        executing(e)
+        try {
+          wallet.webviewMenu('测试', () => {
+            success(e)
+            return true
+          })
+        } catch (error) {
+          failed(e)
+        }
+      }
+
+      /** 获取网络信息 */
+      testNetwork = async e => {
+        executing(e)
+        try {
+          let result = await wallet.getNodeInfo()
+          alert(JSON.stringify(result))
+          if (result.code === 0) {
+            success(e)
+          } else {
+            failed(e)
+          }
+          return true
+        } catch (error) {
+          failed(e)
+        }
+      }
+
+      /** 获取应用信息 */
+      getAppInfo = async e => {
+        executing(e)
+        try {
+          let result = await wallet.getAppInfo()
+          alert(JSON.stringify(result))
+          if (result.code === 0) {
+            if (result.data.isMeetOne) {
               success(e)
             } else {
               failed(e)
             }
-          } catch (error) {
+          } else {
             failed(e)
           }
+          return true
+        } catch (error) {
+          failed(e)
         }
-        /** 因为这个方法没有回调 所以不知道执行的情况 */
-        testWebview = async e => {
-          executing(e)
-          try {
-            // BUG: 已知问题
-            let result = await wallet.webview('https://meet.one', 'MEET.ONE | HOME')
+      }
+
+      /** 跳转 */
+      testNavigate = async (e, target) => {
+        executing(e)
+        try {
+          let result = await wallet.navigate(target)
+          if (target == 'EOSNodeVoteProxyPage') {
+            // 存在的目标
             if (result.code === 0) {
               success(e)
             } else {
               failed(e)
             }
-            return true
-          } catch (error) {
+          }
+        } catch (error) {
+          // 测试跳转到不存在的目标
+          if (target === 'undefined') {
+            success(e)
+            alert(error.data.message)
+          } else {
             failed(e)
           }
         }
+      }
 
-        testWebviewMenu = e => {
-          executing(e)
-          try {
-            wallet.webviewMenu('测试', () => {
-              success(e)
-              return true
-            })
-          } catch (error) {
+      testShare = async (e, type) => {
+        executing(e)
+        try {
+          let result = null
+          if (type === 1) {
+            // 文本
+            result = await wallet.shareText('I am the description')
+          } else if (type === 2) {
+            // 图片
+            result = await wallet.shareImage(
+              'https://static.ethte.com/meet/static/images/logo-landscape-8c94de9326b1e256dd02213449180174.png'
+            )
+          } else if (type === 3) {
+            // 连接
+            result = await wallet.shareLink('https://meet.one', '我是标题', '我是描述')
+          } else if (type === 4) {
+            result = await wallet.shareFile()
+          } else if (type === 5) {
+            result = await wallet.shareCode(
+              '麒麟红包',
+              '我给你发了一个红包，快来领取吧！',
+              'https://www.baidu.com',
+              'https://static.ethte.com/eosmax.png',
+              'https://static.ethte.com/MeetPC/2018_11_15/6923/eoscharge.png'
+            )
+          }
+          if (result.code === 0) {
+            success(e)
+          } else {
             failed(e)
           }
+          return true
+        } catch (error) {
+          failed(e)
         }
-
-        /** 获取网络信息 */
-        testNetwork = async e => {
-          executing(e)
-          try {
-            let result = await wallet.getNodeInfo()
-            alert(JSON.stringify(result))
-            if (result.code === 0) {
-              success(e)
-            } else {
-              failed(e)
-            }
-            return true
-          } catch (error) {
-            failed(e)
-          }
-        }
-
-        /** 获取应用信息 */
-        getAppInfo = async e => {
-          executing(e)
-          try {
-            let result = await wallet.getAppInfo()
-            alert(JSON.stringify(result))
-            if (result.code === 0) {
-              if (result.data.isMeetOne) {
-                success(e)
-              } else {
-                failed(e)
-              }
-            } else {
-              failed(e)
-            }
-            return true
-          } catch (error) {
-            failed(e)
-          }
-        }
-
-        /** 跳转 */
-        testNavigate = async (e, target) => {
-          executing(e)
-          try {
-            let result = await wallet.navigate(target)
-            if (target == 'EOSNodeVoteProxyPage') {
-              // 存在的目标
-              if (result.code === 0) {
-                success(e)
-              } else {
-                failed(e)
-              }
-            }
-          } catch (error) {
-            // 测试跳转到不存在的目标
-            if (target === 'undefined') {
-              success(e)
-              alert(error.data.message)
-            } else {
-              failed(e)
-            }
-          }
-        }
-
-        testShare = async (e, type) => {
-          executing(e)
-          try {
-            let result = null
-            if (type === 1) {
-              // 文本
-              result = await wallet.shareText('share_title', 'I am the description')
-            } else if (type === 2) {
-              // 图片
-              result = await wallet.shareImage(
-                'https://static.ethte.com/meet/static/images/logo-landscape-8c94de9326b1e256dd02213449180174.png'
-              )
-            } else if (type === 3) {
-              // 连接
-              result = await wallet.shareLink('https://meet.one')
-            } else if (type === 4) {
-              result = await wallet.shareFile()
-            } else if (type === 5) {
-              result = await wallet.shareCode(
-                '麒麟红包',
-                '我给你发了一个红包，快来领取吧！',
-                'https://www.baidu.com',
-                'https://static.ethte.com/eosmax.png',
-                'https://static.ethte.com/MeetPC/2018_11_15/6923/eoscharge.png'
-              )
-            }
-            if (result.code === 0) {
-              success(e)
-            } else {
-              failed(e)
-            }
-            return true
-          } catch (error) {
-            failed(e)
-          }
-        }
-      })
+      }
     </script>
   </head>
   <body>

@@ -111,6 +111,7 @@ export class Cosmos extends BlockChain {
   account!: Account
   /** 节点信息 */
   nodeInfo!: NodeInfo
+  baseURL: string | undefined
 
   constructor(
     wallet: MeetWallet,
@@ -118,17 +119,30 @@ export class Cosmos extends BlockChain {
     network?: { protocol: string; host: string; port: number }
   ) {
     super(Blockchains.COSMOS, wallet)
+    this.baseURL = network ? `${network.protocol}://${network.host}:${network.port}` : undefined
+    this.address = cosmosAddress ? cosmosAddress : undefined
+  }
+
+  /** 插件初始化逻辑 */
+  init(): BlockChain {
+    // 如果当前网络非Cosmos类型的, 则抛出错误
+    let type = this.wallet.nodeInfo.blockchain.toLowerCase()
+    let supportTypes = [Blockchains.COSMOS]
+    if (!supportTypes.includes(type)) {
+      // 询问用户是否切换网络[设想的 -> 切换后实现页面刷新重载]
+      throw new Error(`Current Network Type is ${type}, No one of the ${supportTypes}`)
+    }
+    let wallet = this.wallet
     this.http = new Network(
       {
-        baseURL: wallet.nodeInfo
+        baseURL: this.baseURL
+          ? this.baseURL
+          : wallet.nodeInfo
           ? `${wallet.nodeInfo.protocol}://${wallet.nodeInfo.host}:${wallet.nodeInfo.port}`
-          : network
-          ? `${network.protocol}://${network.host}:${network.port}`
           : DEFAULT_RPC_URL
       },
       this.wallet.config.isDebug
     )
-    this.address = cosmosAddress ? cosmosAddress : ''
     this.getNodeInfo().then(res => {
       if (res) {
         this.getIdentity().then(res => {
@@ -141,6 +155,7 @@ export class Cosmos extends BlockChain {
         })
       }
     })
+    return this
   }
 
   /**

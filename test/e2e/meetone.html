@@ -20,7 +20,9 @@
     <link rel="stylesheet" href="./style.css" />
 
     <script>
-      let meetwallet = new MeetJS.MeetWallet({ isDebug: false }).ready((wallet, plugin) => {
+      let meetwallet = new MeetJS.MeetWallet({ isDebug: true })
+      meetwallet.load(new MeetJS.Eos(meetwallet)).then(({ wallet, plugin }) => {
+        alert('Loaded')
         let eos = plugin.getEos()
         signProvider = async e => {
           executing(e)

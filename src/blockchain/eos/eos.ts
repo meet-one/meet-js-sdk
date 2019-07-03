@@ -2,7 +2,6 @@ import { MeetWallet } from '../../index'
 import Blockchian from '../BlockChain'
 import { Blockchains } from '../SupportBlockchain'
 import { ClientResponse } from '../../app/Interface'
-import Tool from '../../util/Tool'
 
 /** Eosjs signProvider params */
 interface EosSignProviderArgs {
@@ -75,10 +74,27 @@ interface IdentityResponse extends ClientResponse {
 
 export class EOS extends Blockchian {
   /** 当前账号 */
-  account: Account | undefined
+  account!: Account
 
   constructor(wallet: MeetWallet) {
     super(Blockchains.EOS, wallet)
+  }
+
+  /** 插件初始化逻辑 */
+  init(): Blockchian {
+    // 如果当前网络非EOS类型的, 则抛出错误
+    let type = this.wallet.nodeInfo.blockchain.toLowerCase()
+    let supportTypes = [
+      Blockchains.EOS,
+      Blockchains.MEETONE,
+      Blockchains.MEETONE_2,
+      Blockchains.BOS
+    ]
+    if (!supportTypes.includes(type)) {
+      // TODO: 询问用户是否切换网络[设想的 -> 切换后实现页面刷新重载]
+      throw new Error(`Current Network Type is ${type}, No one of the ${supportTypes}`)
+    }
+
     this.getIdentity().then(resolve => {
       if (resolve) {
         if (typeof window !== 'undefined') document.dispatchEvent(new CustomEvent('meetoneLoaded'))
@@ -86,6 +102,7 @@ export class EOS extends Blockchian {
         // 没有登录账号
       }
     })
+    return this
   }
 
   /**
@@ -135,9 +152,13 @@ export class EOS extends Blockchian {
     return this.wallet.bridge.generate('eos/account_info', {})
   }
 
-  /** 获取当前账号信息 */
-  getIdentity(): Promise<Account> {
-    if (this.account) {
+  /**
+   * 获取当前账号信息
+   * @param forceUpdate 默认为false, 如果为false,则从当前缓存中获取
+   *
+   *  */
+  getIdentity(forceUpdate?: boolean): Promise<Account> {
+    if (!forceUpdate && this.account) {
       // 如果当前账号信息不为空, 可直接返回
       return new Promise(resolve => resolve(this.account))
     }
