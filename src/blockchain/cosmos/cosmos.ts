@@ -28,11 +28,11 @@ interface signObject {
 interface TransferArgs {
   /** 转账的金额 */
   amount: number
-  /** 转账代币符号, default `uatom` */
+  /** 转账代币符号, default `this.SYSToken` */
   amountDenom?: string
   /** 手续费 */
   fee: number
-  /** 手续费代币符号, default `uatom` */
+  /** 手续费代币符号, default `this.SYSToken` */
   feeDenom?: string
   /** Gas */
   gas: number
@@ -86,11 +86,11 @@ interface NodeInfo {
 interface DelegateMsgs {
   /** (取消)抵押的数量 */
   amount: number | string
-  /** (取消)抵押的代币符号, default `uatom` */
+  /** (取消)抵押的代币符号, default `this.SYSToken` */
   amountDenom?: string
   /** 手续费 */
   fee: number | string
-  /** 手续费代币符号, default `uatom` */
+  /** 手续费代币符号, default `this.SYSToken` */
   feeDenom: string
   /** Gas */
   gas: number | string
@@ -111,20 +111,28 @@ export class Cosmos extends BlockChain {
   account!: Account
   /** 节点信息 */
   nodeInfo!: NodeInfo
+  /** Cosmos RPC Node, If it is undefined, will use the current node which client using*/
   baseURL: string | undefined
+  /** 默认的代币符号, 默认为 `this.SYSToken` */
+  SYSToken: string
 
+  /**
+   * Creates an instance of Cosmos.
+   * @param {MeetWallet} wallet
+   * @param {{ protocol: string; host: string; port: number; address: string; SYSToken?: string }} [options]
+   */
   constructor(
     wallet: MeetWallet,
-    cosmosAddress?: string,
-    network?: { protocol: string; host: string; port: number }
+    options?: { protocol: string; host: string; port: number; address: string; SYSToken?: string }
   ) {
     super(Blockchains.COSMOS, wallet)
-    this.baseURL = network ? `${network.protocol}://${network.host}:${network.port}` : undefined
-    this.address = cosmosAddress ? cosmosAddress : undefined
+    this.baseURL = options ? `${options.protocol}://${options.host}:${options.port}` : undefined
+    this.address = options && options.address ? options.address : undefined
+    this.SYSToken = options && options.SYSToken ? options.SYSToken : 'uatom'
   }
 
   /** 插件初始化逻辑 */
-  init(): BlockChain {
+  init(): this {
     // 如果当前网络非Cosmos类型的, 则抛出错误
     let type = this.wallet.nodeInfo.blockchain.toLowerCase()
     let supportTypes = [Blockchains.COSMOS]
@@ -332,7 +340,7 @@ export class Cosmos extends BlockChain {
         amount: [
           {
             amount: String(fee.amount),
-            denom: fee.denom || 'uatom'
+            denom: fee.denom || this.SYSToken
           }
         ],
         gas: String(fee.gas)
@@ -342,12 +350,23 @@ export class Cosmos extends BlockChain {
   }
 
   /**
-   *
+   * 签名[Transaction], 并且上链
    * @param signObject
    * @param modeType The supported broadcast modes include "block"(return after tx commit), "sync"(return afer CheckTx) and "async"(return right away).
    * @returns {StdTx}
    */
   async signProvider(signObject: signObject, modeType = 'sync') {
+    let signedTx = await this.requestSignature(signObject, modeType)
+    // broadcast
+    return this.broadcast(signedTx)
+  }
+
+  /**
+   * 不上链, 只做签名[Transaction]
+   * @param signObject
+   * @param modeType The supported broadcast modes include "block"(return after tx commit), "sync"(return afer CheckTx) and "async"(return right away).
+   */
+  async requestSignature(signObject: signObject, modeType = 'sync') {
     // `this.account.account_number` 与 `this.account.sequence` 需要同步链上,否则签名不成功
     await this.getIdentity(true)
     let res = await this.wallet.bridge.generate('cosmos/sign_provider', {
@@ -368,9 +387,22 @@ export class Cosmos extends BlockChain {
       },
       mode: modeType
     }
+    return signedTx
+  }
 
-    // broadcast
-    return this.broadcast(signedTx)
+  /**
+   * 签名
+   */
+  async requestArbitrarySignature(signObject: any) {
+    let payload = JSON.stringify(signObject)
+
+    let res = await this.wallet.bridge.generate('cosmos/sign_arbitrary', {
+      signData: payload
+    })
+
+    // if (res.code !== 0) throw new Error('reqeustArbitrarySignatre failed(cosmos/sign_provider)')
+
+    return res
   }
 
   /**
@@ -387,7 +419,7 @@ export class Cosmos extends BlockChain {
             amount: [
               {
                 amount: String(input.amount),
-                denom: input.amountDenom || 'uatom'
+                denom: input.amountDenom || this.SYSToken
               }
             ],
             from_address: input.from || this.account.address,
@@ -414,7 +446,7 @@ export class Cosmos extends BlockChain {
             amount: [
               {
                 amount: String(input.amount),
-                denom: input.amountDenom || 'uatom'
+                denom: input.amountDenom || this.SYSToken
               }
             ],
             delegator_address: input.delegator_address,
@@ -441,7 +473,7 @@ export class Cosmos extends BlockChain {
             amount: [
               {
                 amount: String(input.amount),
-                denom: input.amountDenom || 'uatom'
+                denom: input.amountDenom || this.SYSToken
               }
             ],
             delegator_address: input.delegator_address,
@@ -474,7 +506,7 @@ export class Cosmos extends BlockChain {
             amount: [
               {
                 amount: String(input.amount),
-                denom: input.amountDenom || 'uatom'
+                denom: input.amountDenom || this.SYSToken
               }
             ],
             depositor: input.depositor,

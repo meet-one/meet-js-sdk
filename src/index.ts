@@ -4,7 +4,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-07-02 20:49:25
+ * @Last Modified time: 2019-07-03 14:23:36
  */
 
 import Common from './app/Common'
@@ -15,7 +15,6 @@ import Network from './util/Network'
 import Tool from './util/Tool'
 
 import { EOS } from './blockchain/eos/eos'
-import { Blockchains } from './blockchain/SupportBlockchain'
 import { Cosmos } from './blockchain/cosmos/cosmos'
 import Blockchian from './blockchain/BlockChain'
 

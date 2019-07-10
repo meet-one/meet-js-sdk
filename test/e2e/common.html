@@ -16,6 +16,19 @@
     <script>
       wallet = new MeetJS.MeetWallet()
 
+      isSupportSDK = async e => {
+        executing(e)
+        try {
+          if (window.isSupportMeetoneSdk) {
+            success(e)
+          } else {
+            failed(e)
+          }
+        } catch (error) {
+          failed(e)
+        }
+      }
+
       testAxios = async e => {
         executing(e)
         try {
@@ -167,6 +180,11 @@
     <button onClick="runAllTests();">Run All Tests</button>
 
     <div class="tests">
+      <div>
+        <h2>isSupportSDK</h2>
+        <button onClick="isSupportSDK(event);">Test</button>
+      </div>
+
       <div>
         <h2>Request</h2>
         <button onClick="testAxios(event);">Test</button>

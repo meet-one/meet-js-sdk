@@ -15,49 +15,71 @@
     <script>
       let ratio = 1000000
       let meetwallet = new MeetJS.MeetWallet({ isDebug: true })
-      meetwallet.load(new MeetJS.Cosmos(meetwallet)).then(({ wallet, plugin }) => {
-        alert('Loaded')
-        getIdentity = async e => {
-          executing(e)
-          try {
-            let res = await cosmos.getIdentity(true)
-            console.info(res)
-            alert(JSON.stringify(res))
-            if (res.address) {
-              success(e)
-            } else {
+      meetwallet
+        .load(
+          new MeetJS.Cosmos(meetwallet, {
+            protocol: 'https',
+            host: 'stargate.cosmos.network',
+            // host: 'lcd-app.cosmostation.io',
+            port: 443
+          })
+        )
+        .then(({ wallet, plugin }) => {
+          alert('Loaded')
+          getIdentity = async e => {
+            executing(e)
+            try {
+              let res = await plugin.getIdentity(true)
+              console.info(res)
+              alert(JSON.stringify(res))
+              if (res.address) {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
               failed(e)
+              console.info(error)
             }
-          } catch (error) {
-            failed(e)
-            console.info(error)
           }
-        }
 
-        transfer = async e => {
-          executing(e)
-          try {
-            let res = await cosmos.transfer({
-              amount: 1,
-              fee: 0.0015 * ratio,
-              // gas: 0.04 * ratio,
-              gas: 0.01 * ratio,
-              memo: 'js-sdk test',
-              to: 'cosmos1yqg3xm8ftxm96trp2j3jyknfm4t7tlgwxpgtth'
-            })
-            if (res.txhash && typeof res.code === 'undefined') {
-              success(e)
-              alert(res.txhash)
-            } else {
+          transfer = async e => {
+            executing(e)
+            try {
+              let res = await plugin.transfer({
+                amount: 1,
+                fee: 0.0015 * ratio,
+                gas: 0.04 * ratio,
+                // gas: 0.01 * ratio,
+                memo: 'js-sdk test',
+                to: 'cosmos1yqg3xm8ftxm96trp2j3jyknfm4t7tlgwxpgtth'
+              })
+              if (res.txhash && typeof res.code === 'undefined') {
+                success(e)
+                alert(res.txhash)
+              } else {
+                failed(e)
+                alert(res.raw_log)
+              }
+            } catch (error) {
               failed(e)
-              alert(res.raw_log)
+              console.info(error)
             }
-          } catch (error) {
-            failed(e)
-            console.info(error)
           }
-        }
-      })
+
+          requestArbitrarySignature = async e => {
+            executing(e)
+            try {
+              let res = await plugin.requestArbitrarySignature({ message: 'hello world' })
+              alert(JSON.stringify(res))
+              console.debug(res)
+              success(e)
+            } catch (error) {
+              failed(e)
+              console.info(error)
+            }
+          }
+        })
     </script>
   </head>
   <body>
@@ -73,6 +95,11 @@
       <div>
         <h2>cosmos/sign_provider - transfer</h2>
         <button onClick="transfer(event);">Test</button>
+      </div>
+
+      <div>
+        <h2>requestArbitrarySignature</h2>
+        <button onClick="requestArbitrarySignature(event);">Test</button>
       </div>
     </div>
   </body>

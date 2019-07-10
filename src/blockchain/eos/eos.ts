@@ -71,17 +71,25 @@ interface IdentityResponse extends ClientResponse {
     publicKey: string
   }
 }
+interface optionsConfig {
+  protocol: string
+  host: string
+  port: number
+  chainId: string
+}
 
 export class EOS extends Blockchian {
   /** 当前账号 */
   account!: Account
+  optionsConfig: optionsConfig | undefined
 
-  constructor(wallet: MeetWallet) {
+  constructor(wallet: MeetWallet, options?: optionsConfig) {
     super(Blockchains.EOS, wallet)
+    this.optionsConfig = options
   }
 
   /** 插件初始化逻辑 */
-  init(): Blockchian {
+  init(): this {
     // 如果当前网络非EOS类型的, 则抛出错误
     let type = this.wallet.nodeInfo.blockchain.toLowerCase()
     let supportTypes = [
@@ -228,15 +236,20 @@ export class EOS extends Blockchian {
       }
     }
 
-    let { chainId, host, port, protocol } = this.wallet.nodeInfo
+    let { chainId, host, port, protocol } = this.optionsConfig
+      ? this.optionsConfig
+      : this.wallet.nodeInfo
     // @ts-ignore
     return Eos(
-      Object.assign(eosOptions, {
-        httpEndpoint: `${protocol}://${host}:${port}`,
-        chainId: chainId,
-        // 需要绑定上下文确保`this.eosSignProvider`指向本对象而非Eosjs
-        signProvider: this.eosSignProvider.bind(this)
-      })
+      Object.assign(
+        {
+          httpEndpoint: `${protocol}://${host}:${port}`,
+          chainId: chainId,
+          // 需要绑定上下文确保`this.eosSignProvider`指向本对象而非Eosjs
+          signProvider: this.eosSignProvider.bind(this)
+        },
+        eosOptions
+      )
     )
   }
 

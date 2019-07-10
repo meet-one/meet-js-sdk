@@ -23,7 +23,14 @@
       let meetwallet = new MeetJS.MeetWallet({ isDebug: true })
 
       meetwallet
-        .load(new MeetJS.Eos(meetwallet))
+        .load(
+          new MeetJS.Eos(meetwallet, {
+            protocol: 'https',
+            host: 'public.eosinfra.io',
+            port: 443,
+            chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
+          })
+        )
         .then(({ wallet, plugin }) => {
           alert('Loaded')
           let eos = plugin.getEos()
