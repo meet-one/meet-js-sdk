@@ -146,7 +146,10 @@ export class EOS extends Blockchian {
    * 签名方法
    * @param signData 要签名的内容
    */
-  sign(signData: string): Promise<ClientResponse> {
+  sign(signData: Object): Promise<ClientResponse> {
+    if (typeof signData === 'object') {
+      signData = JSON.stringify(signData)
+    }
     return this.wallet.bridge.generate('eos/signature', {
       data: signData,
       whatfor: 'what for what',

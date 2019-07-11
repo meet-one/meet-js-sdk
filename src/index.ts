@@ -27,7 +27,7 @@ export class MeetWallet extends Common {
   /** 当前应用节点信息 */
   nodeInfo!: NodeInfo
   /** 当前链 */
-  blockchain: Blockchian | undefined
+  plugin: Blockchian | undefined
 
   constructor(initConfig?: Config) {
     super(Object.assign({}, defaultConfig, initConfig, { version: version }))
@@ -91,11 +91,11 @@ export class MeetWallet extends Common {
   load(plugin: Blockchian) {
     return new Promise(resolve => {
       document.addEventListener('meetoneLoaded', () => {
-        this.blockchain = plugin
-        resolve({ wallet: this, plugin: this.blockchain })
+        this.plugin = plugin
+        resolve({ wallet: this, plugin: this.plugin })
       })
 
-      this.updateNetwork()
+      this.getChainInfo()
         .then(() => {
           plugin.init()
         })
@@ -109,8 +109,7 @@ export class MeetWallet extends Common {
    * 获取客户端当前的网络信息(节点地址,节点Id, 节点端口, 节点类型)
    * @param forceUpdate 默认为false, 如果为false,则从当前缓存中获取
    * */
-
-  updateNetwork(forceUpdate?: boolean): Promise<NodeInfo> {
+  getChainInfo(forceUpdate?: boolean): Promise<NodeInfo> {
     if (!forceUpdate && this.nodeInfo) {
       // 如果当前账号信息不为空, 可直接返回
       return new Promise(resolve => resolve(this.nodeInfo))
@@ -142,7 +141,7 @@ export class MeetWallet extends Common {
     })
 
     /** 获取当前节点信息 */
-    this.getNodeInfo()
+    this.getChainInfo()
 
     // judge `addJSMessageHandleFlag` whatever it is 1 for preventing mutil listening
     if (window.document.body.getAttribute('addJSMessageHandleFlag') !== '1') {

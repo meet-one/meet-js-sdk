@@ -18,6 +18,11 @@ export default class Common {
     this.http = new Network()
   }
 
+  /**
+   * 跳转到指定页面中
+   * @param {string} target
+   * @param {(object | undefined)} [options]
+   */
   navigate(target: string, options?: object | undefined): Promise<ClientResponse> {
     return this.bridge.generate('app/navigate', { target, options })
   }
@@ -31,12 +36,12 @@ export default class Common {
 
   /**
    * 分享文本
-   * @param description 分享内容
+   * @param content 分享内容
    */
-  shareText(description: string): Promise<ClientResponse> {
+  shareText(content: string): Promise<ClientResponse> {
     return this.bridge.generate('app/share', {
       shareType: 1,
-      description
+      description: content
     })
   }
 
@@ -70,8 +75,8 @@ export default class Common {
    * Open a webview in client
    * @param url 要跳转的目标地址
    */
-  webview(url: string, title?: string | undefined): Promise<ClientResponse> {
-    return this.bridge.generate('app/webview', { url, title })
+  webview(url: string): Promise<ClientResponse> {
+    return this.bridge.generate('app/webview', { url })
   }
 
   /**

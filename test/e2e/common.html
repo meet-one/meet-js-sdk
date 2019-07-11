@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./style.css" />
 
     <script>
-      wallet = new MeetJS.MeetWallet()
+      wallet = new MeetJS.MeetWallet({ isDebug: true })
 
       isSupportSDK = async e => {
         executing(e)
@@ -45,12 +45,10 @@
           failed(e)
         }
       }
-      /** 因为这个方法没有回调 所以不知道执行的情况 */
       testWebview = async e => {
         executing(e)
         try {
-          // BUG: 已知问题
-          let result = await wallet.webview('https://meet.one', 'MEET.ONE | HOME')
+          let result = await wallet.webview('https://meet.one')
           if (result.code === 0) {
             success(e)
           } else {
@@ -95,7 +93,7 @@
       getAppInfo = async e => {
         executing(e)
         try {
-          let result = await wallet.getAppInfo()
+          let result = await wallet.getAppInfo(true)
           alert(JSON.stringify(result))
           if (result.code === 0) {
             if (result.data.isMeetOne) {

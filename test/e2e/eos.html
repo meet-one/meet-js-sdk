@@ -20,11 +20,11 @@
     <link rel="stylesheet" href="./style.css" />
 
     <script>
-      let meetwallet = new MeetJS.MeetWallet({ isDebug: true })
+      let wallet = new MeetJS.MeetWallet({ isDebug: true })
 
-      meetwallet
+      wallet
         .load(
-          new MeetJS.Eos(meetwallet, {
+          new MeetJS.Eos(wallet, {
             protocol: 'https',
             host: 'public.eosinfra.io',
             port: 443,
@@ -144,7 +144,7 @@
           getIdentity = async e => {
             executing(e)
             try {
-              let res = await plugin.getIdentity()
+              let res = await plugin.getIdentity(true)
               if (typeof plugin.account !== 'undefined') {
                 if (plugin.account.chainType.toLowerCase() === 'eos') {
                   success(e)
@@ -163,14 +163,18 @@
             executing(e)
             try {
               let account = plugin.account
-              let res = await plugin.sign('芝士就是力量')
+              // Sign Pure String
+              // let res = await plugin.sign('芝士就是力量')
+              // Sign JSON Object
+              let res = await plugin.sign({ message: '芝士就是力量' })
               if (res.code === 0) {
                 if (res.data.signature) {
                   console.log(res.data.signature)
                   // SIG_K1_K3sbCi8HEnByYibTgD3jeCVc2fLfWVgbmgsz4vFzqKDf3EwzA2ucUhw5PhCszcCLFj5cBE9Bgqi2PGAPxa5YLz7ao49NgN
                   let validate = eosjs_ecc.verify(
                     res.data.signature,
-                    '芝士就是力量',
+                    // '芝士就是力量', // string
+                    JSON.stringify({ message: '芝士就是力量' }), // JSON Object Sequence
                     account.publicKey
                   )
                   if (validate) {
