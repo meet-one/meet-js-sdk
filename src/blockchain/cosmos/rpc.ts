@@ -1,0 +1,6 @@
+export const get_account = '/auth/accounts'
+export const get_account_balance = '/bank/balances'
+export const node_info = '/node_info'
+export const get_validatorsets = '/validatorsets/latest'
+export const push_transaction = '/txs'
+export const get_tx_with_hash = '/txs'

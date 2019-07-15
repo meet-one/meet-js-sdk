@@ -1,6 +1,6 @@
 import PostMessageModule from '../../src/app/PostMessageModule'
 
-let postMeesageModule = new PostMessageModule('meetone://')
+let postMeesageModule = new PostMessageModule({ protocol: 'meetone://' })
 
 describe('callbackid generate', () => {
   it('Start with meetjs_callback_', () => {
@@ -10,27 +10,6 @@ describe('callbackid generate', () => {
   it('Not handle start with meet_callback_', () => {
     let callbackid = postMeesageModule.getCallbackId()
     expect(callbackid.startsWith('meet_callback')).toBeFalsy()
-  })
-})
-
-describe('generateMessage & send', () => {
-  let path = 'app/webview'
-  let payload = { title: 'MEET.ONE Homepage', url: 'https://meet.one' }
-  let message = postMeesageModule.generateMessage(path, payload)
-  let message_times = postMeesageModule.generateMessage(path, payload, {
-    protocal: 'moreone://',
-    callbackId: 'meet_callback_times'
-  })
-
-  it('generate message', () => {
-    // console.log(message)
-    // console.log(message_times)
-    // TODO: 判断参数 及 路由名称
-  })
-
-  it('send message', () => {
-    // TODO: need e2e test
-    postMeesageModule.sendMessage(message)
   })
 })
 

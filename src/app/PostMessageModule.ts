@@ -4,39 +4,19 @@
  * @Author: JohnTrump
  * @Date: 2019-06-21 11:39:51
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-21 17:31:30
+ * @Last Modified time: 2019-07-02 11:26:09
  */
-interface PostMessageInterface {
-  // encode the data
-  // Parse Javascript Object to params String
-  // JSON.stringify() -> encodeURIComponent() -> btoa()
-  encode(obj: object): string
-  // decode
-  decode(str: string): object
-  // Generate random callbackid
-  getCallbackId(): string
-  // PostMessage to client
-  sendMessage(url: string): void
-  // generate the message
-  generateMessage(
-    path: string,
-    payload: object,
-    options?: { protocal?: string; callbackId?: string }
-  ): string
-  // generate & send
-  generate(
-    path: string,
-    payload: object,
-    options?: { protocal?: string; callbackId?: string }
-  ): Promise<any>
-}
 
-class PostMessage implements PostMessageInterface {
+import { Config, ClientResponse, ErrorMessage } from './Interface'
+import { defaultConfig } from './DefaultConfig'
+
+class PostMessage {
   private tryTimes: number = 0
-  protocal: string
 
-  constructor(protocal?: string) {
-    this.protocal = protocal || 'meetone://'
+  config: Config
+
+  constructor(config?: Config) {
+    this.config = config || defaultConfig
   }
 
   /** generate message and send to client */
@@ -44,48 +24,71 @@ class PostMessage implements PostMessageInterface {
     path: string,
     payload: object,
     options?:
-      | { protocal?: string | undefined; callbackId?: string | undefined; callback?: () => any }
+      | { protocol?: string | undefined; callbackId?: string | undefined; callback?: () => any }
       | undefined
   ): Promise<any> {
+    // browser
     if (typeof window !== 'undefined') {
+      // 自定义回调id情况
       if (options && options.callbackId) {
         // @ts-ignore
         window[options.callbackId] = options.callback || function() {}
         const message = this.generateMessage(path, payload, Object.assign(options))
-        console.log(message)
+        this.config.isDebug && console.debug(`send: ${path}`, message)
         this.sendMessage(message)
         // @ts-ignore
         return window[options.callbackId]
       }
 
-      // browser
+      // 非自定义回调id情况
+      let that = this
       return new Promise((resolve, reject) => {
         const callbackId = (options && options.callbackId) || this.getCallbackId()
         const message = this.generateMessage(path, payload, Object.assign({ callbackId }, options))
-        console.log(message)
+        that.config.isDebug && console.debug(`send: ${path}`, message)
         this.sendMessage(message)
         // @ts-ignore
-        window[callbackId] = function(result) {
+        window[callbackId] = function(result: ClientResponse) {
+          that.config.isDebug && console.debug(`window[${callbackId}]:`, result)
           try {
+            // 错误处理
+            if (result.code === 998 || result.code === 404) {
+              // @ts-ignore
+              // throw new Error(result.data && result.data.message)
+              reject(result)
+            }
+
             resolve(result)
           } catch (error) {
             reject(error)
           } finally {
-            if (options && options.callbackId) {
-              // 接收到客户端的回调后,将绑定的回调置为null,方便垃圾回收
-              // @ts-ignore
-              window[callbackId] = null
-            } else {
-              // 自定义callbackid 不执行上面操作
-            }
+            // 接收到客户端的回调后,将绑定的回调置为null,方便垃圾回收
+            // @ts-ignore
+            window[callbackId] = null
           }
+        }
+
+        // @ts-ignore
+        if (window.isSupportMeetoneSdk) {
+          // 超时时间设定, 因为不能比较好的兼容旧版本,只能在新版本发包前,往已有的JS中注入全局变量 `isSupportMeetoneSdk`来兼容
+          // meet-inject set `isSupportMeetoneSdk`
+          setTimeout(() => {
+            // @ts-ignore
+            if (typeof window[callbackId] === 'function') {
+              let params: ErrorMessage = {
+                code: 998,
+                type: 998,
+                data: { message: '操作超时' }
+              }
+              // @ts-ignore
+              window[callbackId](params)
+            }
+          }, this.config.timeout)
         }
       })
     } else {
       // nodejs
-      return new Promise((resolve, reject) => {
-        // TODO:
-      })
+      return new Promise((resolve, reject) => {})
     }
   }
 
@@ -126,13 +129,16 @@ class PostMessage implements PostMessageInterface {
   generateMessage(
     path: string,
     payload: object,
-    options?: { protocal?: string; callbackId?: string }
+    options?: { protocol?: string; callbackId?: string }
   ): string {
-    let { protocal = this.protocal, callbackId = this.getCallbackId() } = options || {}
+    let {
+      protocol = this.config.protocol || defaultConfig.protocol,
+      callbackId = this.getCallbackId()
+    } = options || {}
 
     let message = ''
     let payloadData = this.encode(payload)
-    message = protocal
+    message = protocol
       .concat(path)
       .concat('?params=')
       .concat(payloadData)
@@ -162,13 +168,11 @@ class PostMessage implements PostMessageInterface {
             this.tryTimes = ++this.tryTimes
           }, 1000)
         } else {
-          // TODO: 前端监控机制
           console.error('post url timeout(60 times):', url)
         }
       }
     } else {
       // nodejs
-      // TODO:
       throw new Error('Method not implemented.')
     }
   }

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>E2E Testing - COSMOS</title>
+    <!-- necessary import -->
+    <script src="../../dist/meet-js-sdk.umd.js"></script>
+    <script src="https://cdn.bootcss.com/vConsole/3.3.0/vconsole.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/eosjs@16.0.9/lib/eos.js"></script>
+    <script src="./script.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+
+    <script>
+      let ratio = 1000000
+      let meetwallet = new MeetJS.MeetWallet({ isDebug: true })
+      meetwallet
+        .load(
+          new MeetJS.Cosmos(meetwallet, {
+            protocol: 'https',
+            host: 'stargate.cosmos.network',
+            // host: 'lcd-app.cosmostation.io',
+            port: 443
+          })
+        )
+        .then(({ wallet, plugin }) => {
+          alert('Loaded')
+          getIdentity = async e => {
+            executing(e)
+            try {
+              let res = await plugin.getIdentity(true)
+              console.info(res)
+              alert(JSON.stringify(res))
+              if (res.address) {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.info(error)
+            }
+          }
+
+          transfer = async e => {
+            executing(e)
+            try {
+              let res = await plugin.transfer({
+                amount: 1,
+                fee: 0.0015 * ratio,
+                gas: 0.04 * ratio,
+                // gas: 0.01 * ratio,
+                memo: 'js-sdk test',
+                to: 'cosmos1yqg3xm8ftxm96trp2j3jyknfm4t7tlgwxpgtth'
+              })
+              if (res.txhash && typeof res.code === 'undefined') {
+                success(e)
+                alert(res.txhash)
+              } else {
+                failed(e)
+                alert(res.raw_log)
+              }
+            } catch (error) {
+              failed(e)
+              console.info(error)
+            }
+          }
+
+          requestArbitrarySignature = async (e, signData) => {
+            executing(e)
+            try {
+              let res = await plugin.requestArbitrarySignature(signData)
+              if (res.code === 0) {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.info(error)
+            }
+          }
+        })
+    </script>
+  </head>
+  <body>
+    <h1>Tests - Cosmos</h1>
+
+    <button onClick="runAllTests();">Run All Tests</button>
+    <div class="tests">
+      <div>
+        <h2>cosmos/account_info</h2>
+        <button onClick="getIdentity(event);">Test</button>
+      </div>
+
+      <div>
+        <h2>cosmos/sign_provider - transfer</h2>
+        <button onClick="transfer(event);">Test</button>
+      </div>
+
+      <div>
+        <h2>cosmos/sign_arbitrary - Object</h2>
+        <button onClick="requestArbitrarySignature(event, {message: 'hello world'});">
+          Test
+        </button>
+      </div>
+
+      <div>
+        <h2>cosmos/sign_arbitrary - String</h2>
+        <button onClick="requestArbitrarySignature(event, 'hello world');">
+          Test
+        </button>
+      </div>
+    </div>
+  </body>
+</html>

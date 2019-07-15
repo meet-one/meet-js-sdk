@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+    <title>E2E Testing - MEET.ONE</title>
+
+    <!-- necessary import -->
+    <script src="../../dist/meet-js-sdk.umd.js"></script>
+    <script src="https://cdn.bootcss.com/vConsole/3.3.0/vconsole.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/eosjs@16.0.9/lib/eos.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/eosjs-ecc@4.0.4/lib/eosjs-ecc.min.js"
+      integrity="sha512-dYFDmK/d9r3/NCp6toLtfkwOjSMRBaEzaGAx1tfRItC0nsI0hVLERk05iNBQR7uDNI7ludYhcBI4vUiFHdjsTQ=="
+      crossorigin="anonymous"
+    ></script>
+    <script src="./script.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+
+    <script>
+      let meetwallet = new MeetJS.MeetWallet({ isDebug: true })
+      meetwallet
+        .load(
+          new MeetJS.Eos(meetwallet, {
+            protocol: 'https',
+            host: 'api.meetone.alohaeos.com',
+            port: 443,
+            chainId: 'cfe6486a83bad4962f232d48003b1824ab5665c36778141034d75e57b956e422'
+          })
+        )
+        .then(({ wallet, plugin }) => {
+          alert('Loaded')
+          let eos = plugin.getEos()
+          signProvider = async e => {
+            executing(e)
+            try {
+              let account = plugin.account
+              let res = await eos.transaction({
+                actions: [
+                  {
+                    account: 'eosio.token',
+                    name: 'transfer',
+                    authorization: [
+                      {
+                        actor: account.name, // creator
+                        permission: account.authority
+                      }
+                    ],
+                    data: {
+                      from: account.name, // creator
+                      to: '5ovoloerxa.m',
+                      quantity: '0.0001 MEETONE',
+                      memo: 'js-sdk signProvider'
+                    }
+                  }
+                ],
+                options: {
+                  broadcast: true
+                }
+              })
+              if (res.transaction_id) {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.log(error)
+            }
+          }
+
+          transaction = async e => {
+            executing(e)
+            try {
+              let account = plugin.account
+              let res = await plugin.transaction(
+                [
+                  {
+                    // TODO: 替换合约地址
+                    account: 'eosio.token',
+                    name: 'transfer',
+                    authorization: [
+                      {
+                        actor: account.name, // creator
+                        permission: account.authority
+                      }
+                    ],
+                    data: {
+                      from: account.name, // creator
+                      to: '5ovoloerxa.m',
+                      quantity: '0.0001 MEETONE',
+                      memo: 'js-sdk transaction'
+                    }
+                  }
+                ],
+                'it works?',
+                undefined
+              )
+              if (res.code === 0 && res.data.transaction_id) {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.error(error)
+            }
+          }
+
+          transfer = async e => {
+            executing(e)
+            try {
+              let res = await plugin.transfer('5ovoloerxa.m', 0.0001, 'Transfer Memo', 'Order Info')
+              if (res.code === 0 && res.data.transaction_id) {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.error(error)
+            }
+          }
+
+          /**
+           * 获取当前账号信息, 初始化 EOS 模块时会默认调用
+           */
+          getIdentity = async e => {
+            executing(e)
+            try {
+              let res = await plugin.getIdentity()
+              console.log(res)
+              if (typeof plugin.account !== 'undefined') {
+                if (plugin.account.chainType.toLowerCase() === 'meet.one') {
+                  success(e)
+                  return
+                }
+                failed(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.error(error)
+            }
+          }
+
+          sign = async e => {
+            executing(e)
+            try {
+              let account = plugin.account
+              let res = await plugin.sign('芝士就是力量')
+              if (res.code === 0) {
+                if (res.data.signature) {
+                  console.log(res.data.signature)
+                  // SIG_K1_K3sbCi8HEnByYibTgD3jeCVc2fLfWVgbmgsz4vFzqKDf3EwzA2ucUhw5PhCszcCLFj5cBE9Bgqi2PGAPxa5YLz7ao49NgN
+                  let validate = eosjs_ecc.verify(
+                    res.data.signature,
+                    '芝士就是力量',
+                    account.publicKey
+                  )
+                  if (validate) {
+                    success(e)
+                  } else {
+                    failed(e)
+                  }
+                }
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.error(error)
+            }
+          }
+        })
+    </script>
+  </head>
+  <body>
+    <h1>Tests - MEET.ONE</h1>
+
+    <button onClick="runAllTests();">Run All Tests</button>
+
+    <div class="tests">
+      <div>
+        <h2>eos/account_info</h2>
+        <button onClick="getIdentity(event);">Test</button>
+      </div>
+      <div>
+        <h2>eos/signature</h2>
+        <button onClick="sign(event);">Test</button>
+      </div>
+      <div>
+        <h2>eos/sign_provider</h2>
+        <button onClick="signProvider(event);">Test</button>
+      </div>
+      <div>
+        <h2>eos/transaction</h2>
+        <button onClick="transaction(event);">Test</button>
+      </div>
+      <div>
+        <h2>eos/transfer</h2>
+        <button onClick="transfer(event);">Test</button>
+      </div>
+    </div>
+  </body>
+</html>

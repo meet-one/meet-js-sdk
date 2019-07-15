@@ -1,38 +1,148 @@
 /*
  * The Meet JS SDK Library for Meet.ONE Client
- * This library is used to assist in generating the protocol URI of the client, and encapsulates some common protocols and methods.
+ * This library is used to assist in generating the protcol URI of the client, and encapsulates some common protocols and methods.
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-06-21 20:50:15
+ * @Last Modified time: 2019-07-03 14:23:36
  */
 
 import Common from './app/Common'
-const VERSION = '0.0.1'
+import { Config, AppInfo, NodeInfo, AppInfoResponse } from './app/Interface'
+import { defaultConfig, version } from './app/DefaultConfig'
 
-class MeetWallet extends Common {
+import Network from './util/Network'
+import Tool from './util/Tool'
+
+import { EOS } from './blockchain/eos/eos'
+import { Cosmos } from './blockchain/cosmos/cosmos'
+import Blockchian from './blockchain/BlockChain'
+
+/** The Meet JS SDK Library for MEET.ONE Client */
+export class MeetWallet extends Common {
   /** current js-sdk version */
-  version: string = ''
-  /** protocal string */
-  protocal: string = 'meetone://'
+  config: Config = defaultConfig
+  /** 当前应用信息 */
+  appInfo!: AppInfo
+  /** 当前应用节点信息 */
+  nodeInfo!: NodeInfo
+  /** 当前链 */
+  plugin: Blockchian | undefined
 
-  constructor(protocal?: string) {
-    super(protocal)
-    this.version = VERSION
+  constructor(initConfig?: Config) {
+    super(Object.assign({}, defaultConfig, initConfig, { version: version }))
+    this.config = Object.assign({}, defaultConfig, initConfig, { version: version })
     // for browsers
     if (typeof window !== 'undefined') {
       if (document.readyState !== 'loading') {
         this._init()
       } else {
-        document.addEventListener('DOMContentLoaded', this._init)
+        document.addEventListener('DOMContentLoaded', () => {
+          this._init()
+        })
       }
     } else {
       // nodejs
     }
   }
 
+  /**
+   * 获取当前APP客户端信息
+   * @param forceUpdate 默认为false, 如果为false,则从当前缓存中获取
+   */
+  getAppInfo(forceUpdate?: boolean): Promise<AppInfoResponse> {
+    if (!forceUpdate && this.appInfo) {
+      // 如果当前账号信息不为空, 可直接返回
+      return new Promise(resolve => resolve({ code: 0, type: 0, data: this.appInfo }))
+    }
+    // 我们的客户端都会在URL上注入相关的版本信息,所以可以不通过协议来实现获取当前APP客户端信息
+    // @ts-ignore
+    return Promise.race([
+      this.bridge.generate('app/info', {}),
+      // 这是为了兼容旧版本, 旧版本没有这个协议,所以需要模拟
+      new Promise((resolve, reject) => {
+        if (typeof window !== 'undefined') {
+          let response: AppInfoResponse = {
+            code: 0,
+            type: 0,
+            data: {
+              // 客户端在一级页面跳转二级页面后, 不会将现有的url参数(包含当前客户端的信息)带过去, 因此最好不采用这种形式获取
+              // 只有在低版本(<2.6.0)没有支持`app/info`的协议下,才会尝试从URL中读取
+              appVersion: Tool.getQueryString('meetone_version'),
+              language: Tool.getQueryString('lang'),
+              platform: Tool.getQueryString('system_name'),
+              isMeetOne: Tool.getQueryString('meetone') === 'true',
+              isFromUrl: true
+            }
+          }
+          setTimeout(() => {
+            resolve(response)
+          }, 10 * 1000)
+        } else {
+          reject()
+        }
+      })
+    ])
+  }
+
+  /**
+   * 加载网络
+   */
+  load(plugin: Blockchian) {
+    return new Promise(resolve => {
+      document.addEventListener('meetoneLoaded', () => {
+        this.plugin = plugin
+        resolve({ wallet: this, plugin: this.plugin })
+      })
+
+      this.getChainInfo()
+        .then(() => {
+          plugin.init()
+        })
+        .catch(error => {
+          alert(error)
+        })
+    })
+  }
+
+  /**
+   * 获取客户端当前的网络信息(节点地址,节点Id, 节点端口, 节点类型)
+   * @param forceUpdate 默认为false, 如果为false,则从当前缓存中获取
+   * */
+  getChainInfo(forceUpdate?: boolean): Promise<NodeInfo> {
+    if (!forceUpdate && this.nodeInfo) {
+      // 如果当前账号信息不为空, 可直接返回
+      return new Promise(resolve => resolve(this.nodeInfo))
+    }
+
+    return new Promise(async (resolve, reject) => {
+      let res = await this.getNodeInfo()
+      if (res.code === 0) {
+        let { name, blockchain, domains, chain_id, chainId, host, port, protocol } = res.data
+        this.nodeInfo = {
+          blockchain: blockchain ? blockchain.toLowerCase() : name.toLowerCase(), // Chain类型
+          chainId: chainId || chain_id, // blockchain chainId
+          host: host ? host : domains[0], // hostname
+          port: port ? port : 80, // 端口, 默认为80
+          protocol: protocol ? protocol : 'http' // 协议, 默认为 http
+        }
+        resolve(this.nodeInfo)
+      } else {
+        reject(null)
+      }
+    })
+  }
+
   /** init the  */
   private _init() {
+    // 获取客户端信息
+    this.getAppInfo().then(res => {
+      if (res.code === 0) this.appInfo = res.data
+    })
+
+    /** 获取当前节点信息 */
+    this.getChainInfo()
+
     // judge `addJSMessageHandleFlag` whatever it is 1 for preventing mutil listening
     if (window.document.body.getAttribute('addJSMessageHandleFlag') !== '1') {
       window.document.body.setAttribute('addJSMessageHandleFlag', '1')
@@ -45,36 +155,18 @@ class MeetWallet extends Common {
           // Notice that, we will skip the callback startwith `meet_callback`
           // So don't use it if you manually define callbackid
           if (callbackId.startsWith('meet_callback')) {
-            console.log('skip:' + callbackId)
             return
           }
           const resultJSON = decodeURIComponent(atob(params))
           const result = JSON.parse(resultJSON)
-          console.log(callbackId, result)
           if (callbackId) {
             // @ts-ignore
             window[callbackId](result)
           }
-        } catch (error) {
-          // TODO: 前端监控机制
-        }
+        } catch (error) {}
       })
     }
   }
-
-  /** Change the meet-js-sdk Protocal */
-  setProtocal(protocal: string): void {
-    this.protocal = protocal
-  }
 }
 
-let meetwallet = new MeetWallet()
-
-// browsers
-if (typeof window !== 'undefined') {
-  // @ts-ignore
-  window.meetwallet = meetwallet
-}
-
-// nodejs
-export default meetwallet
+export { Network as http, Tool as util, EOS as Eos, Cosmos }

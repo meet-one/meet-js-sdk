@@ -9,17 +9,18 @@ import builtins from 'rollup-plugin-node-builtins'
 
 const pkg = require('./package.json')
 const isProduction = process.env.NODE_ENV === 'production'
-const moduleName = 'meetwallet'
+const moduleName = 'MeetJS'
 
 export default {
   // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
-  external: ['eosjs'],
+  // external: ['eosjs'],
   input: `src/index.ts`,
   output: [
     // for the UMD styles modules
     {
       file: pkg.main,
       name: moduleName,
+      exports: 'named' /** Disable warning for default imports */,
       format: 'umd'
     },
 
@@ -27,6 +28,7 @@ export default {
     {
       file: pkg.module,
       name: moduleName,
+      exports: 'named' /** Disable warning for default imports */,
       format: 'es',
       sourcemap: true
     },
@@ -35,6 +37,7 @@ export default {
     {
       file: pkg.iife,
       name: moduleName,
+      exports: 'named' /** Disable warning for default imports */,
       format: 'iife'
     }
   ],
@@ -42,11 +45,13 @@ export default {
     include: 'src/**'
   },
   plugins: [
-    // Allow json resolution
-    json(),
-    // Compile TypeScript files
-    typescript({
-      useTsconfigDeclarationDir: true
+    // Allow node_modules resolution, so you can use 'external' to control
+    // which external modules to include in the bundle
+    // https://github.com/rollup/rollup-plugin-node-resolve#usage
+    resolve({
+      jsnext: true,
+      main: true,
+      browser: true
     }),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs({
@@ -57,14 +62,13 @@ export default {
         'node_modules/punycode/punycode.js': ['toASCII']
       }
     }),
-    // Allow node_modules resolution, so you can use 'external' to control
-    // which external modules to include in the bundle
-    // https://github.com/rollup/rollup-plugin-node-resolve#usage
-    resolve({
-      // jsnext: true,
-      // main: true,
-      // browser: true
+    // Allow json resolution
+    json(),
+    // Compile TypeScript files
+    typescript({
+      useTsconfigDeclarationDir: true
     }),
+
     // Resolve source maps to the original source
     sourceMaps(),
     builtins(),
