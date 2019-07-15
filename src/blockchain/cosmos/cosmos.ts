@@ -372,6 +372,9 @@ export class Cosmos extends BlockChain {
     let res = await this.wallet.bridge.generate('cosmos/sign_provider', {
       signObject
     })
+    if (res.code !== 0) {
+      throw new Error('cosmos/sign_provider failed:\n' + JSON.stringify(res))
+    }
     // 签名:
     const signedTx = {
       tx: {
@@ -391,16 +394,24 @@ export class Cosmos extends BlockChain {
   }
 
   /**
-   * 签名
+   * 签名方法
+   * @param signData 要签名的内容
    */
-  async requestArbitrarySignature(signObject: any) {
-    let payload = JSON.stringify(signObject)
+  async requestArbitrarySignature(signData: any) {
+    let payload = null
+    if (typeof signData === 'object') {
+      payload = JSON.stringify(signData)
+    } else {
+      payload = signData
+    }
 
     let res = await this.wallet.bridge.generate('cosmos/sign_arbitrary', {
       signData: payload
     })
 
-    // if (res.code !== 0) throw new Error('reqeustArbitrarySignatre failed(cosmos/sign_provider)')
+    if (res.code !== 0) {
+      throw new Error('cosmos/sign_arbitrary failed:\n' + JSON.stringify(res))
+    }
 
     return res
   }

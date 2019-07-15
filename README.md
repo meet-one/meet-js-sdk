@@ -25,6 +25,10 @@
       - [plugin.transaction](#plugintransaction)
       - [plugin.transfer](#plugintransfer)
     - [Cosmos](#cosmos)
+      - [plugin.requestArbitrarySignature](#pluginrequestarbitrarysignature)
+        - [签名过程](#签名过程)
+        - [验证签名](#验证签名)
+      - [plugin.transfer](#plugintransfer-1)
   - [Contribute Guide](#contribute-guide)
     - [Run Unit Test](#run-unit-test)
     - [Run E2E Test](#run-e2e-test)
@@ -415,7 +419,7 @@ wallet.webviewMenu('custom menu', () => {
 
 客户端已经支持并兼容 Scatter 协议(eosjs@16.0.9, eosjs@20+)
 
-##### plugin.getEos
+#### plugin.getEos
 
 ```
 plugin.getEos(eosOptions?: EosConfig, Eos?: Object<Eos>)
@@ -437,7 +441,7 @@ let eos = plugin.getEos();
 eos.transaction({...})
 ```
 
-##### plugin.sign
+#### plugin.sign
 
 ```
 plugin.sign(signData: Object)
@@ -460,7 +464,7 @@ Promise<ClientResponse> >>>
 {data: {isOwner: true, account: "johntrump123", signature: "SIG_K1_KXbiT3zRZJYjB3FV8xv3qPYjDaBPQbfGiw8ZWwgmEpM…fg4yMazqc2iJycUa4ETtqzbza3HvqVmVBtvuacjcW77G8zgm6"}, code: 0, type: 6}
 ```
 
-##### plugin.getIdentity
+#### plugin.getIdentity
 
 获取当前账号信息
 
@@ -514,7 +518,7 @@ Promise<Account>
 console.log(wallet.plugin.account)
 ```
 
-##### plugin.transaction
+#### plugin.transaction
 
 ```
 plugin.transaction(
@@ -565,7 +569,7 @@ let res = await plugin.transaction(
 )
 ```
 
-##### plugin.transfer
+#### plugin.transfer
 
 ```ts
 interface TransferOptions {
@@ -608,6 +612,126 @@ let res = await plugin.transfer('g.f.w', 0.0001, 'Transfer Memo', 'Order Info')
 ```
 
 ### Cosmos
+
+#### plugin.requestArbitrarySignature
+
+```
+plugin.requestArbitrarySignature(signObject: any)
+```
+
+**Parameters**
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+let signData = 'hello world'
+let res = await plugin.requestArbitrarySignature(signData)
+Promise<ClientResponse> >>>
+
+{
+  code: 0,
+  type: 0,
+  data: {
+    publicKey: 'cosmos1jwgdw55ssd3zdwfgm20sh6pc5kmwzfqdg84m4g',
+    signature: 'a69d3ed83aca5af910de2b05115657bff3ed384750c1aeb7d9bfce4b5bf83f3010714584e1d5a7007db9ede5db4087724fe7c01ac273781f565bfa44d8590448'
+  }
+}
+
+```
+
+##### 签名过程
+
+```js
+const secp256k1 = require('secp256k1') // https://github.com/cryptocoinjs/secp256k1-node
+
+const hash = crypto
+  .createHash('sha256')
+  .update(signData)
+  .digest('hex')
+const buf = Buffer.from(hash, 'hex')
+// `ecpairPriv` 为私钥
+let signObj = secp256k1.sign(buf, ecpairPriv)
+
+// 签名结果
+let signatureBase64 = Buffer.from(signObj.signature, 'binary').toString('hex')
+```
+
+##### 验证签名
+
+下面以 `secp256k1-node`库为例
+
+```js
+const secp256k1 = require('secp256k1') // https://github.com/cryptocoinjs/secp256k1-node
+
+// Public Key Byte
+const pubKeyByte = secp256k1.publicKeyCreate(ecpairPriv)
+
+// secp256k1.verify(Buffer message, Buffer signature, Buffer publicKey)
+var isVerify = secp256k1.verify(
+  buf,
+  // signObj.signature,
+  Buffer.from(
+    'a69d3ed83aca5af910de2b05115657bff3ed384750c1aeb7d9bfce4b5bf83f3010714584e1d5a7007db9ede5db4087724fe7c01ac273781f565bfa44d8590448',
+    'hex'
+  ),
+  Buffer.from(pubKeyByte, 'binary')
+)
+
+console.log(isVerify) // true
+```
+
+#### plugin.transfer
+
+```
+plugin.transfer(input: TransferArgs)
+```
+
+**Parameters**
+
+```ts
+interface TransferArgs {
+  /** 转账的金额 */
+  amount: number
+  /** 转账代币符号, default `this.SYSToken` */
+  amountDenom?: string
+  /** 手续费 */
+  fee: number
+  /** 手续费代币符号, default `this.SYSToken` */
+  feeDenom?: string
+  /** Gas */
+  gas: number
+  /** Memo */
+  memo?: string
+  /** transfer to */
+  to: string
+  /** transfer from[option] */
+  from?: string
+}
+```
+
+**Returns**
+
+https://stargate.cosmos.network/txs/A9FA53852753EC40207858F74CF08B5D91773851A22E86EAFD36F94EECE91BBF
+
+**Example**
+
+```js
+let ratio = 1000000
+let res = await plugin.transfer({
+  amount: 1,
+  fee: 0.0015 * ratio,
+  gas: 0.04 * ratio,
+  memo: 'js-sdk test',
+  to: 'cosmos1yqg3xm8ftxm96trp2j3jyknfm4t7tlgwxpgtth'
+})
+if (res.txhash && typeof res.code === 'undefined') {
+  // success(e)
+}
+```
 
 ## Contribute Guide
 

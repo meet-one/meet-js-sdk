@@ -137,6 +137,8 @@ export class EOS extends Blockchian {
       (res: { code: number; data: { signature: string } }) => {
         if (res.code === 0) {
           return res.data.signature
+        } else {
+          throw new Error('eos/sign_provider failed:\n' + JSON.stringify(res))
         }
       }
     )

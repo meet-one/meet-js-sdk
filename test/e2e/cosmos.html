@@ -67,13 +67,15 @@
             }
           }
 
-          requestArbitrarySignature = async e => {
+          requestArbitrarySignature = async (e, signData) => {
             executing(e)
             try {
-              let res = await plugin.requestArbitrarySignature({ message: 'hello world' })
-              alert(JSON.stringify(res))
-              console.debug(res)
-              success(e)
+              let res = await plugin.requestArbitrarySignature(signData)
+              if (res.code === 0) {
+                success(e)
+              } else {
+                failed(e)
+              }
             } catch (error) {
               failed(e)
               console.info(error)
@@ -98,8 +100,17 @@
       </div>
 
       <div>
-        <h2>requestArbitrarySignature</h2>
-        <button onClick="requestArbitrarySignature(event);">Test</button>
+        <h2>cosmos/sign_arbitrary - Object</h2>
+        <button onClick="requestArbitrarySignature(event, {message: 'hello world'});">
+          Test
+        </button>
+      </div>
+
+      <div>
+        <h2>cosmos/sign_arbitrary - String</h2>
+        <button onClick="requestArbitrarySignature(event, 'hello world');">
+          Test
+        </button>
       </div>
     </div>
   </body>
