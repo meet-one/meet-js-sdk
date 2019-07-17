@@ -136,6 +136,8 @@ export class Cosmos extends BlockChain {
   httpEndpoint: string | undefined
   /** 默认的代币符号, 默认为 `this.SYSToken` */
   SYSToken: string
+  /** 序列(签名需要, 链上获取不及时, 需要在本地做缓存, 做更新) */
+  sequence!: string
 
   /**
    *Creates an instance of Cosmos.
@@ -235,6 +237,10 @@ export class Cosmos extends BlockChain {
         // 链上查询
         this.getAccountInfo(this.address).then(res => {
           this.account = res.value
+          // 如果 `this.sequence 没有设置 或者小于链上返回的数值, 则更新(否则本地自加做缓存)`
+          if (!!!this.sequence || Number(this.sequence) < Number(this.account.sequence)) {
+            this.sequence = this.account.sequence
+          }
           resolve(this.account)
         })
       }
@@ -349,6 +355,9 @@ export class Cosmos extends BlockChain {
           mode: transaction.mode
         })
         if (res.status === 200) {
+          if (res.data.txhash && typeof res.data.code === 'undefined') {
+            this.sequence = (Number(this.sequence) + 1).toString()
+          }
           resolve(res.data)
         } else {
           reject({
@@ -375,7 +384,7 @@ export class Cosmos extends BlockChain {
     return {
       account_number: this.account.account_number,
       chain_id: this.nodeInfo.network,
-      sequence: this.account.sequence,
+      sequence: this.sequence,
       memo: memo || '',
       fee: {
         amount: [
