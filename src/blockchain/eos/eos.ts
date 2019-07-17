@@ -79,7 +79,7 @@ interface optionsConfig {
 }
 
 export class EOS extends Blockchian {
-  /** 当前账号 */
+  /** 当前账号 Current account info */
   account!: Account
   optionsConfig: optionsConfig | undefined
 

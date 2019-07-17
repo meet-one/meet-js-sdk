@@ -25,30 +25,12 @@ interface signObject {
   msgs?: Array<{ type: string; value: object }>
 }
 
-interface TransferArgs {
-  /** 转账的金额 */
-  amount: number
-  /** 转账代币符号, default `this.SYSToken` */
-  amountDenom?: string
-  /** 手续费 */
-  fee: number
-  /** 手续费代币符号, default `this.SYSToken` */
-  feeDenom?: string
-  /** Gas */
-  gas: number
-  /** Memo */
-  memo?: string
-  /** transfer to */
-  to: string
-  /** transfer from[option] */
-  from?: string
-}
-
 // 代币
 interface Coin {
   denom: string
   amount: string
 }
+
 interface Account {
   address: string
   coins: Coin[]
@@ -83,25 +65,64 @@ interface NodeInfo {
   }
 }
 
-interface DelegateMsgs {
+interface CommonTransactionArgs {
+  /** 手续费 */
+  fee: number
+  /** 手续费代币符号, default `this.SYSToken` */
+  feeDenom?: string
+  /** Gas */
+  gas: number
+  /** Memo */
+  memo?: string
+}
+
+interface TransferArgs extends CommonTransactionArgs {
+  /** 转账的金额 */
+  amount: number
+  /** 转账代币符号, default `this.SYSToken` */
+  amountDenom?: string
+  /** transfer to */
+  to: string
+  /** transfer from[option] */
+  from?: string
+}
+
+interface DelegateMsgs extends CommonTransactionArgs {
   /** (取消)抵押的数量 */
   amount: number | string
   /** (取消)抵押的代币符号, default `this.SYSToken` */
   amountDenom?: string
-  /** 手续费 */
-  fee: number | string
-  /** 手续费代币符号, default `this.SYSToken` */
-  feeDenom: string
-  /** Gas */
-  gas: number | string
-  /** Memo */
-  memo?: string
   delegator_address: string
   validator_address: string
 }
 
 /** 默认节点地址 */
 const DEFAULT_RPC_URL = 'https://stargate.cosmos.network'
+
+/**
+ * 抵押转移的参数
+ */
+interface RedelegateArgs extends CommonTransactionArgs {
+  /** (重新)抵押的数量 */
+  amount: number | string
+  /** (重新)抵押的代币符号, default `this.SYSToken` */
+  amountDenom?: string
+  /** 抵押者 */
+  delegator: string
+  /** 打算抵押的 validator cosmos address */
+  to_validator: string
+  /** 原先抵押的 validator cosmos address */
+  from_validator: string
+}
+
+interface DepositArgs extends CommonTransactionArgs {
+  /** deposit amount */
+  amount: string | number
+  /** Token symbol, default `this.SYSToken` */
+  amountDenom?: string
+  depositor: string
+  proposal_id: string
+}
 
 export class Cosmos extends BlockChain {
   /** Network request */
@@ -112,21 +133,39 @@ export class Cosmos extends BlockChain {
   /** 节点信息 */
   nodeInfo!: NodeInfo
   /** Cosmos RPC Node, If it is undefined, will use the current node which client using*/
-  baseURL: string | undefined
+  httpEndpoint: string | undefined
   /** 默认的代币符号, 默认为 `this.SYSToken` */
   SYSToken: string
 
   /**
-   * Creates an instance of Cosmos.
+   *Creates an instance of Cosmos.
    * @param {MeetWallet} wallet
-   * @param {{ protocol: string; host: string; port: number; address: string; SYSToken?: string }} [options]
+   * @param {{
+   *       httpEndPoint?: string
+   *       protocol?: string
+   *       host?: string
+   *       port?: number
+   *       address?: string
+   *       SYSToken?: string
+   *     }} [options]
    */
   constructor(
     wallet: MeetWallet,
-    options?: { protocol: string; host: string; port: number; address: string; SYSToken?: string }
+    options?: {
+      httpEndPoint?: string
+      protocol?: string
+      host?: string
+      port?: number
+      address?: string
+      SYSToken?: string
+    }
   ) {
     super(Blockchains.COSMOS, wallet)
-    this.baseURL = options ? `${options.protocol}://${options.host}:${options.port}` : undefined
+    if (options) {
+      this.httpEndpoint = options.httpEndPoint
+        ? options.httpEndPoint
+        : `${options.protocol}://${options.host}:${options.port}`
+    }
     this.address = options && options.address ? options.address : undefined
     this.SYSToken = options && options.SYSToken ? options.SYSToken : 'uatom'
   }
@@ -143,8 +182,8 @@ export class Cosmos extends BlockChain {
     let wallet = this.wallet
     this.http = new Network(
       {
-        baseURL: this.baseURL
-          ? this.baseURL
+        baseURL: this.httpEndpoint
+          ? this.httpEndpoint
           : wallet.nodeInfo
           ? `${wallet.nodeInfo.protocol}://${wallet.nodeInfo.host}:${wallet.nodeInfo.port}`
           : DEFAULT_RPC_URL
@@ -326,11 +365,13 @@ export class Cosmos extends BlockChain {
   /**
    * 生成StdMsg通用方法
    */
-  generateMsg(
+  async generateMsg(
     fee: { amount: number | string; denom?: string; gas: number | string },
     msgs: Array<{ type: string; value: object }>,
     memo?: string
-  ): signObject {
+  ): Promise<signObject> {
+    // `this.account.account_number` 与 `this.account.sequence` 需要同步链上,否则签名不成功
+    await this.getIdentity(true)
     return {
       account_number: this.account.account_number,
       chain_id: this.nodeInfo.network,
@@ -356,6 +397,7 @@ export class Cosmos extends BlockChain {
    * @returns {StdTx}
    */
   async signProvider(signObject: signObject, modeType = 'sync') {
+    console.info('signProvider:', signObject)
     let signedTx = await this.requestSignature(signObject, modeType)
     // broadcast
     return this.broadcast(signedTx)
@@ -367,8 +409,6 @@ export class Cosmos extends BlockChain {
    * @param modeType The supported broadcast modes include "block"(return after tx commit), "sync"(return afer CheckTx) and "async"(return right away).
    */
   async requestSignature(signObject: signObject, modeType = 'sync') {
-    // `this.account.account_number` 与 `this.account.sequence` 需要同步链上,否则签名不成功
-    await this.getIdentity(true)
     let res = await this.wallet.bridge.generate('cosmos/sign_provider', {
       signObject
     })
@@ -420,8 +460,8 @@ export class Cosmos extends BlockChain {
    * 转账交易
    * example: https://stargate.cosmos.network/txs/A9FA53852753EC40207858F74CF08B5D91773851A22E86EAFD36F94EECE91BBF
    */
-  transfer(input: TransferArgs) {
-    let signObject = this.generateMsg(
+  async transfer(input: TransferArgs) {
+    let signObject = await this.generateMsg(
       { amount: input.fee, denom: input.feeDenom, gas: input.gas },
       [
         {
@@ -447,19 +487,17 @@ export class Cosmos extends BlockChain {
    * 抵押
    * example: https://stargate.cosmos.network/txs/0AA58ED1E47915703E06DF46291D664031F889AEBC7A1AA747339A015901B62C
    */
-  delegate(input: DelegateMsgs) {
-    let signObject = this.generateMsg(
+  async delegate(input: DelegateMsgs) {
+    let signObject = await this.generateMsg(
       { amount: input.fee, denom: input.feeDenom, gas: input.gas },
       [
         {
           type: 'cosmos-sdk/MsgDelegate',
           value: {
-            amount: [
-              {
-                amount: String(input.amount),
-                denom: input.amountDenom || this.SYSToken
-              }
-            ],
+            amount: {
+              amount: String(input.amount),
+              denom: input.amountDenom || this.SYSToken
+            },
             delegator_address: input.delegator_address,
             validator_address: input.validator_address
           }
@@ -474,19 +512,17 @@ export class Cosmos extends BlockChain {
    * 取消抵押
    * example: https://stargate.cosmos.network/txs/040099262917BBAA9A9AFDD54D448D51A085C4D86DDEB7CA70754E9BA9507AE4
    */
-  undelegate(input: DelegateMsgs) {
-    let signObject = this.generateMsg(
+  async undelegate(input: DelegateMsgs) {
+    let signObject = await this.generateMsg(
       { amount: input.fee, denom: input.feeDenom, gas: input.gas },
       [
         {
           type: 'cosmos-sdk/MsgUndelegate',
           value: {
-            amount: [
-              {
-                amount: String(input.amount),
-                denom: input.amountDenom || this.SYSToken
-              }
-            ],
+            amount: {
+              amount: String(input.amount),
+              denom: input.amountDenom || this.SYSToken
+            },
             delegator_address: input.delegator_address,
             validator_address: input.validator_address
           }
@@ -497,18 +533,13 @@ export class Cosmos extends BlockChain {
     return this.signProvider(signObject)
   }
 
-  /** 保证金 */
-  deposit(input: {
-    amount: number | string
-    amountDenom?: string
-    fee: number | string
-    feeDenom: string
-    gas: number | string
-    memo?: string
-    depositor: string
-    proposal_id: string
-  }) {
-    let signObject = this.generateMsg(
+  /**
+   * 为提案增加保证金
+   * deposit for deposit period proposal
+   * Cosmos governance explain: https://blog.chorus.one/an-overview-of-cosmos-hub-governance/
+   *  */
+  async deposit(input: DepositArgs) {
+    let signObject = await this.generateMsg(
       { amount: input.fee, denom: input.feeDenom, gas: input.gas },
       [
         {
@@ -531,16 +562,17 @@ export class Cosmos extends BlockChain {
   }
 
   /** 投票 */
-  vote(input: {
+  async vote(input: {
     fee: number | string
     feeDenom: string
     gas: number | string
     memo?: string
-    option: object
+    /** options: ["Yes", "No", "No with Veto", "Abstain"] */
+    option: string
     proposal_id: string | number
     voter: string
   }) {
-    let signObject = this.generateMsg(
+    let signObject = await this.generateMsg(
       { amount: input.fee, denom: input.feeDenom, gas: input.gas },
       [
         {
@@ -557,9 +589,58 @@ export class Cosmos extends BlockChain {
     return this.signProvider(signObject)
   }
 
-  // cosmos-sdk/MsgBeginRedelegate
+  /**
+   * 抵押转移
+   * eg:
+   * https://www.mintscan.io/txs/C7BC679E8F19500D8A47E4FE33B065CD3C73D7D9F730A288B505D21D43308A4F
+   * cosmos-sdk/MsgBeginRedelegate
+   * @param {RedelegateArgs} input
+   */
+  async redelegate(input: RedelegateArgs) {
+    let signObject = await this.generateMsg(
+      { amount: input.fee, denom: input.feeDenom, gas: input.gas },
+      [
+        {
+          type: 'cosmos-sdk/MsgBeginRedelegate',
+          value: {
+            amount: {
+              amount: String(input.amount),
+              denom: input.amountDenom || this.SYSToken
+            },
+            delegator_address: input.delegator,
+            validator_dst_address: input.to_validator,
+            validator_src_address: input.from_validator
+          }
+        }
+      ],
+      input.memo
+    )
+    return this.signProvider(signObject)
+  }
+
+  /**
+   * 提取抵押奖励
+   * eg:https://www.mintscan.io/txs/8fb4c666c63e946e22fd0dde7d2101837254891bb2ddccc3bd0f37e82288ad3d
+   * */
+  async getReward(input: DelegateMsgs) {
+    let signObject = await this.generateMsg(
+      { amount: input.fee, denom: input.feeDenom, gas: input.gas },
+      [
+        {
+          type: 'cosmos-sdk/MsgWithdrawDelegationReward',
+          value: {
+            delegator_address: input.delegator_address,
+            validator_address: input.validator_address
+          }
+        }
+      ],
+      input.memo
+    )
+    return this.signProvider(signObject)
+  }
+
   // cosmos-sdk/MsgSubmitProposal
-  // cosmos-sdk/MsgWithdrawDelegationReward
+  // cosmos-sdk/SoftwareUpgradeProposal
 
   /**
    * Get the latest validator set

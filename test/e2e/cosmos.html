@@ -8,7 +8,6 @@
     <!-- necessary import -->
     <script src="../../dist/meet-js-sdk.umd.js"></script>
     <script src="https://cdn.bootcss.com/vConsole/3.3.0/vconsole.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/eosjs@16.0.9/lib/eos.js"></script>
     <script src="./script.js"></script>
     <link rel="stylesheet" href="./style.css" />
 
@@ -18,14 +17,16 @@
       meetwallet
         .load(
           new MeetJS.Cosmos(meetwallet, {
-            protocol: 'https',
-            host: 'stargate.cosmos.network',
-            // host: 'lcd-app.cosmostation.io',
-            port: 443
+            // protocol: 'https',
+            // host: 'cosmos-rpc.meet.one',
+            // port: 443
+            // httpEndPoint: 'https://lcd-app.cosmostation.io'
+            httpEndPoint: '/'
           })
         )
         .then(({ wallet, plugin }) => {
           alert('Loaded')
+
           getIdentity = async e => {
             executing(e)
             try {
@@ -43,16 +44,137 @@
             }
           }
 
+          delegate = async e => {
+            executing(e)
+            try {
+              let res = await plugin.delegate({
+                amount: 1,
+                fee: 0.0015 * ratio,
+                gas: 0.15 * ratio, // 150000
+                memo: 'js-sdk test',
+                delegator_address: meetwallet.plugin.address,
+                validator_address: 'cosmosvaloper1u724thtn8z47nw9nvel367m3qh0gqnxe4g555a'
+              })
+              console.info(res)
+              alert(JSON.stringify(res))
+              if (res.txhash && typeof res.code === 'undefined') {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.info(error)
+            }
+          }
+
+          getReward = async e => {
+            executing(e)
+            try {
+              let res = await plugin.getReward({
+                fee: 0.0015 * ratio,
+                gas: 0.08 * ratio, // 80000
+                memo: 'js-sdk test',
+                delegator_address: meetwallet.plugin.address,
+                validator_address: 'cosmosvaloper1u724thtn8z47nw9nvel367m3qh0gqnxe4g555a'
+              })
+              console.info(res)
+              alert(JSON.stringify(res))
+              if (res.txhash && typeof res.code === 'undefined') {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.info(error)
+            }
+          }
+
+          undelegate = async e => {
+            executing(e)
+            try {
+              let res = await plugin.undelegate({
+                amount: 1,
+                fee: 0.0015 * ratio,
+                gas: 0.15 * ratio, // 150000
+                memo: 'js-sdk test',
+                delegator_address: meetwallet.plugin.address,
+                validator_address: 'cosmosvaloper1u724thtn8z47nw9nvel367m3qh0gqnxe4g555a'
+              })
+              console.info(res)
+              alert(JSON.stringify(res))
+              if (res.txhash && typeof res.code === 'undefined') {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.info(error)
+            }
+          }
+
+          redelegate = async e => {
+            executing(e)
+            try {
+              let res = await plugin.redelegate({
+                amount: 1,
+                fee: 0.0015 * ratio,
+                gas: 0.22 * ratio, // 150000
+                memo: 'js-sdk test',
+                delegator: meetwallet.plugin.address,
+                to_validator: 'cosmosvaloper1u724thtn8z47nw9nvel367m3qh0gqnxe4g555a',
+                from_validator: 'cosmosvaloper102ruvpv2srmunfffxavttxnhezln6fnc54at8c'
+              })
+              console.info(res)
+              alert(JSON.stringify(res))
+              if (res.txhash && typeof res.code === 'undefined') {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.info(error)
+            }
+          }
+
           transfer = async e => {
             executing(e)
             try {
               let res = await plugin.transfer({
                 amount: 1,
                 fee: 0.0015 * ratio,
-                gas: 0.04 * ratio,
-                // gas: 0.01 * ratio,
+                gas: 0.04 * ratio, // 40000
                 memo: 'js-sdk test',
                 to: 'cosmos1yqg3xm8ftxm96trp2j3jyknfm4t7tlgwxpgtth'
+              })
+              if (res.txhash && typeof res.code === 'undefined') {
+                success(e)
+                alert(res.txhash)
+              } else {
+                failed(e)
+                alert(res.raw_log)
+              }
+            } catch (error) {
+              failed(e)
+              console.info(error)
+            }
+          }
+
+          // AFBC8C661CB25D2995CC179C3A00D32CBB942E0E112F6389E23282A4580B8D90
+          vote = async e => {
+            executing(e)
+            try {
+              let res = await plugin.vote({
+                amount: 1,
+                fee: 0.0015 * ratio,
+                gas: 0.025 * ratio, // 25000
+                memo: 'js-sdk test',
+                option: 'Yes', // must be ["Yes", "No", "No with Veto", "Abstain"]
+                proposal_id: '10',
+                voter: meetwallet.plugin.address
               })
               if (res.txhash && typeof res.code === 'undefined') {
                 success(e)
@@ -89,16 +211,48 @@
 
     <button onClick="runAllTests();">Run All Tests</button>
     <div class="tests">
+      <!-- get cosmos account info -->
       <div>
         <h2>cosmos/account_info</h2>
         <button onClick="getIdentity(event);">Test</button>
       </div>
 
+      <!-- cosmos transfer -->
       <div>
         <h2>cosmos/sign_provider - transfer</h2>
         <button onClick="transfer(event);">Test</button>
       </div>
 
+      <!-- cosmos delegate -->
+      <div>
+        <h2>cosmos/sign_provider - delegate</h2>
+        <button onClick="delegate(event);">Test</button>
+      </div>
+
+      <!-- cosmos undelegate -->
+      <div>
+        <h2>cosmos/sign_provider - undelegate</h2>
+        <button onClick="undelegate(event);">Test</button>
+      </div>
+
+      <!-- cosmos redelegate -->
+      <div>
+        <h2>cosmos/sign_provider - redelegate</h2>
+        <button onClick="redelegate(event);">Test</button>
+      </div>
+
+      <div>
+        <h2>cosmos/sign_provider - getReward</h2>
+        <button onClick="getReward(event);">Test</button>
+      </div>
+
+      <!-- cosmos vote -->
+      <div>
+        <h2>cosmos/sign_provider - vote</h2>
+        <button onClick="vote(event);">Test</button>
+      </div>
+
+      <!-- sign_arbitrary with object -->
       <div>
         <h2>cosmos/sign_arbitrary - Object</h2>
         <button onClick="requestArbitrarySignature(event, {message: 'hello world'});">
@@ -106,6 +260,7 @@
         </button>
       </div>
 
+      <!-- sign_arbitrary with string -->
       <div>
         <h2>cosmos/sign_arbitrary - String</h2>
         <button onClick="requestArbitrarySignature(event, 'hello world');">

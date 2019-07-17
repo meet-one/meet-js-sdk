@@ -13,7 +13,7 @@
   "author": "JohnTrump <wujunchuan1994@hotmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/meetone/meet-js-sdk"
+    "url": "https://gitlab.com/meet-common/fe/meet-js-sdk"
   },
   "license": "MIT",
   "engines": {

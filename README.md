@@ -28,7 +28,11 @@
       - [plugin.requestArbitrarySignature](#pluginrequestarbitrarysignature)
         - [签名过程](#签名过程)
         - [验证签名](#验证签名)
-      - [plugin.transfer](#plugintransfer-1)
+      - [transactions](#transactions)
+        - [plugin.transfer](#plugintransfer-1)
+        - [plugin.delegate / plugin.undelegate](#plugindelegate--pluginundelegate)
+        - [plugin.redelegate](#pluginredelegate)
+      - [plugin.vote](#pluginvote)
   - [Contribute Guide](#contribute-guide)
     - [Run Unit Test](#run-unit-test)
     - [Run E2E Test](#run-e2e-test)
@@ -684,20 +688,12 @@ var isVerify = secp256k1.verify(
 console.log(isVerify) // true
 ```
 
-#### plugin.transfer
+#### transactions
 
-```
-plugin.transfer(input: TransferArgs)
-```
-
-**Parameters**
+事务相关操作
 
 ```ts
-interface TransferArgs {
-  /** 转账的金额 */
-  amount: number
-  /** 转账代币符号, default `this.SYSToken` */
-  amountDenom?: string
+interface CommonTransactionArgs {
   /** 手续费 */
   fee: number
   /** 手续费代币符号, default `this.SYSToken` */
@@ -706,6 +702,32 @@ interface TransferArgs {
   gas: number
   /** Memo */
   memo?: string
+}
+
+interface BroadcastTxCommitResult {
+  check_tx?: Object
+  deliver_tx?: Object
+  hash: string
+  height: integer
+}
+```
+
+##### plugin.transfer
+
+type: `cosmos-sdk/MsgSend`
+
+```
+plugin.transfer(input: TransferArgs)
+```
+
+**Parameters**
+
+```ts
+interface TransferArgs extends CommonTransactionArgs {
+  /** 转账的金额 */
+  amount: number
+  /** 转账代币符号, default `this.SYSToken` */
+  amountDenom?: string
   /** transfer to */
   to: string
   /** transfer from[option] */
@@ -714,6 +736,10 @@ interface TransferArgs {
 ```
 
 **Returns**
+
+`BroadcastTxCommitResult`
+
+Raw Data
 
 https://stargate.cosmos.network/txs/A9FA53852753EC40207858F74CF08B5D91773851A22E86EAFD36F94EECE91BBF
 
@@ -728,6 +754,176 @@ let res = await plugin.transfer({
   memo: 'js-sdk test',
   to: 'cosmos1yqg3xm8ftxm96trp2j3jyknfm4t7tlgwxpgtth'
 })
+if (res.txhash && typeof res.code === 'undefined') {
+  // success(e)
+}
+```
+
+##### plugin.delegate / plugin.undelegate
+
+抵押与赎回
+
+type: `cosmos-sdk/MsgDelegate`
+
+type: `cosmos-sdk/MsgUndelegate`
+
+```
+plugin.delegate(input: DelegateMsgs)
+plugin.undelegate(input: DelegateMsgs)
+```
+
+**Parameters**
+
+```ts
+interface DelegateMsgs extends CommonTransactionArgs {
+  /** (取消)抵押的数量 */
+  amount: number | string
+  /** (取消)抵押的代币符号, default `this.SYSToken` */
+  amountDenom?: string
+  delegator_address: string
+  validator_address: string
+}
+```
+
+**Returns**
+
+`BroadcastTxCommitResult`
+
+Raw Data - delegate
+
+https://stargate.cosmos.network/txs/0AA58ED1E47915703E06DF46291D664031F889AEBC7A1AA747339A015901B62C
+
+Raw Data - undelegate
+
+https://stargate.cosmos.network/txs/040099262917BBAA9A9AFDD54D448D51A085C4D86DDEB7CA70754E9BA9507AE4
+
+**Example**
+
+```js
+let ratio = 1000000
+
+/** delegate */
+let res = await plugin.delegate({
+  amount: 1,
+  fee: 0.0015 * ratio,
+  gas: 0.15 * ratio, // 150000
+  memo: 'js-sdk test',
+  delegator_address: meetwallet.plugin.address,
+  validator_address: 'cosmosvaloper1u724thtn8z47nw9nvel367m3qh0gqnxe4g555a'
+})
+
+if (res.txhash && typeof res.code === 'undefined') {
+  // success
+}
+
+/** undelegate */
+let res = await plugin.undelegate({
+  amount: 1,
+  fee: 0.0015 * ratio,
+  gas: 0.15 * ratio, // 150000
+  memo: 'js-sdk test',
+  delegator_address: meetwallet.plugin.address,
+  validator_address: 'cosmosvaloper1u724thtn8z47nw9nvel367m3qh0gqnxe4g555a'
+})
+
+if (res.txhash && typeof res.code === 'undefined') {
+  // successs
+}
+```
+
+##### plugin.redelegate
+
+type: `cosmos-sdk/MsgBeginRedelegate`,
+
+**Parameters**
+
+```ts
+interface RedelegateArgs extends CommonTransactionArgs {
+  /** (重新)抵押的数量 */
+  amount: number | string
+  /** (重新)抵押的代币符号, default `this.SYSToken` */
+  amountDenom?: string
+  /** 抵押者 */
+  delegator: string
+  /** 打算抵押的 validator cosmos address */
+  to_validator: string
+  /** 原先抵押的 validator cosmos address */
+  from_validator: string
+}
+```
+
+**Returns**
+
+`BroadcastTxCommitResult`
+
+Raw Data
+
+https://www.mintscan.io/txs/C7BC679E8F19500D8A47E4FE33B065CD3C73D7D9F730A288B505D21D43308A4F
+
+**Example**
+
+```js
+let ratio = 1000000
+let res = await plugin.redelegate({
+  amount: 1,
+  fee: 0.0015 * ratio,
+  gas: 0.22 * ratio, // 150000
+  memo: 'js-sdk test',
+  delegator: meetwallet.plugin.address,
+  to_validator: 'cosmosvaloper1u724thtn8z47nw9nvel367m3qh0gqnxe4g555a',
+  from_validator: 'cosmosvaloper102ruvpv2srmunfffxavttxnhezln6fnc54at8c'
+})
+
+if (res.txhash && typeof res.code === 'undefined') {
+  // success(e)
+}
+```
+
+#### plugin.vote
+
+type: `cosmos-sdk/MsgVote`
+
+```
+plugin.transfer(input)
+```
+
+**Parameters**
+
+```ts
+input:{
+  fee: number | string
+  feeDenom: string
+  gas: number | string
+  memo?: string
+  /** options: ["Yes", "No", "No with Veto", "Abstain"] */
+  option: string
+  proposal_id: string | number
+  voter: string
+}
+```
+
+**Returns**
+
+`BroadcastTxCommitResult`
+
+Raw Data
+
+https://hubble.figment.network/cosmos/chains/cosmoshub-2/transactions/5DD24DC54660D224F590D089FCEFCFDCC37FC96A9EB009F63F7A87E5D841ED6F
+
+**Example**
+
+```js
+let ratio = 1000000
+let res = await plugin.vote({
+  amount: 1,
+  fee: 0.0015 * ratio,
+  gas: 0.025 * ratio, // 25000
+  memo: 'js-sdk test',
+  option: 'Yes', // must be ["Yes", "No", "No with Veto", "Abstain"]
+  proposal_id: '10',
+  voter: meetwallet.plugin.address
+})
+
 if (res.txhash && typeof res.code === 'undefined') {
   // success(e)
 }
