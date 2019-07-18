@@ -96,6 +96,21 @@ interface DelegateMsgs extends CommonTransactionArgs {
   validator_address: string
 }
 
+interface SubmitProposalArgs extends CommonTransactionArgs {
+  /** 标题 */
+  title: string
+  /** 描述 */
+  description: string
+  /** 初始抵押的代币数量 */
+  initialDepositAmount: number | string
+  /** 初始抵押的代币符号, default `this.SYSToken` */
+  initialDepositDenom?: string
+  /** 提案类型, 默认为 `Text` */
+  proposal_type?: string
+  /** 提案人的公钥地址 */
+  proposer: string // TODO: 默认可以为当前账号地址
+}
+
 /** 默认节点地址 */
 const DEFAULT_RPC_URL = 'https://stargate.cosmos.network'
 
@@ -649,7 +664,30 @@ export class Cosmos extends BlockChain {
   }
 
   // cosmos-sdk/MsgSubmitProposal
-  // cosmos-sdk/SoftwareUpgradeProposal
+  async submitProposal(input: SubmitProposalArgs) {
+    let signObject = await this.generateMsg(
+      { amount: input.fee, denom: input.feeDenom, gas: input.gas },
+      [
+        {
+          type: 'cosmos-sdk/MsgSubmitProposal',
+          value: {
+            description: input.description,
+            initial_deposit: [
+              {
+                amount: String(input.initialDepositAmount),
+                denom: input.initialDepositDenom || this.SYSToken
+              }
+            ],
+            proposal_type: input.proposal_type || 'Text',
+            proposer: input.proposer,
+            title: input.title
+          }
+        }
+      ],
+      input.memo
+    )
+    return this.signProvider(signObject)
+  }
 
   /**
    * Get the latest validator set

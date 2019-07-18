@@ -68,6 +68,30 @@
             }
           }
 
+          deposit = async e => {
+            executing(e)
+            try {
+              let res = await plugin.deposit({
+                amount: 1,
+                fee: 0.0015 * ratio,
+                gas: 0.22 * ratio, // 22000
+                memo: 'js-sdk test',
+                depositor: meetwallet.plugin.address,
+                proposal_id: 11
+              })
+              console.info(res)
+              alert(JSON.stringify(res))
+              if (res.txhash && typeof res.code === 'undefined') {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.info(error)
+            }
+          }
+
           getReward = async e => {
             executing(e)
             try {
@@ -189,6 +213,31 @@
             }
           }
 
+          submitProposal = async e => {
+            executing(e)
+            try {
+              let res = await plugin.submitProposal({
+                fee: 0.0015 * ratio,
+                gas: 0.5 * ratio, // 50000
+                memo: 'js-sdk test',
+                title: 'proposal_title',
+                description: 'proposal_description',
+                initialDepositAmount: 1,
+                proposer: meetwallet.plugin.address
+              })
+              if (res.txhash && typeof res.code === 'undefined') {
+                success(e)
+                alert(res.txhash)
+              } else {
+                failed(e)
+                alert(res.raw_log)
+              }
+            } catch (error) {
+              failed(e)
+              console.info(error)
+            }
+          }
+
           requestArbitrarySignature = async (e, signData) => {
             executing(e)
             try {
@@ -244,6 +293,18 @@
       <div>
         <h2>cosmos/sign_provider - getReward</h2>
         <button onClick="getReward(event);">Test</button>
+      </div>
+
+      <!-- cosmos proposal -->
+      <div>
+        <h2>cosmos/sign_provider - submitProposal</h2>
+        <button onClick="submitProposal(event);">Test</button>
+      </div>
+
+      <!-- cosmos deposit -->
+      <div>
+        <h2>cosmos/sign_provider - deposit</h2>
+        <button onClick="deposit(event);">Test</button>
       </div>
 
       <!-- cosmos vote -->
