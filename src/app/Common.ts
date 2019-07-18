@@ -20,14 +20,16 @@ export default class Common {
 
   /**
    * 跳转到指定页面中
-   * @param {string} target
-   * @param {(object | undefined)} [options]
+   * Open a client page
+   * @param {string} target 指定的页面名称 The client page name
+   * @param {(object | undefined)} [options] 传递给页面的参数 Options param will pass to client page
    */
   navigate(target: string, options?: object | undefined): Promise<ClientResponse> {
     return this.bridge.generate('app/navigate', { target, options })
   }
 
   /**
+   * 获取当前客户端选中的节点网络信息
    * Get current wallet node network information
    */
   getNodeInfo(): Promise<NodeInfoResponse> {
@@ -36,7 +38,8 @@ export default class Common {
 
   /**
    * 分享文本
-   * @param content 分享内容
+   * Share text
+   * @param content 分享内容 The Content which wanted to share
    */
   shareText(content: string): Promise<ClientResponse> {
     return this.bridge.generate('app/share', {
@@ -47,7 +50,8 @@ export default class Common {
 
   /**
    * 分享图片
-   * @param url 图片的URL地址
+   * Share picture
+   * @param url 图片的URL地址 The Picture URL which wanted to share
    */
   shareImage(url: string): Promise<ClientResponse> {
     return this.bridge.generate('app/share', {
@@ -58,9 +62,10 @@ export default class Common {
 
   /**
    * 分享连接
-   * @param url 分享的连接地址
-   * @param title 分享的标题
-   * @param description 分享描述
+   * Share link
+   * @param url 分享的连接地址 The link which wanted to share
+   * @param title 分享的标题 Link title
+   * @param description 分享描述 Share description
    */
   shareLink(url: string, title?: string, description?: string): Promise<ClientResponse> {
     return this.bridge.generate('app/share', {
@@ -72,6 +77,7 @@ export default class Common {
   }
 
   /**
+   * 打开一个网页
    * Open a webview in client
    * @param url 要跳转的目标地址
    */
@@ -80,9 +86,10 @@ export default class Common {
   }
 
   /**
+   * 自定义当前 webview 右上角菜单名称, 及点击事件
    * Define the webview menu(right button) and callback
-   * @param rightTitle 自定义菜单名称
-   * @param callback 点击菜单回调函数
+   * @param rightTitle 自定义菜单名称 The custom menu name
+   * @param callback 点击菜单回调函数 The callback function when click the custom menu will triggered
    */
   webviewMenu(rightTitle: string, callback: () => any): void {
     this.bridge.generate(

@@ -1,6 +1,6 @@
 {
   "name": "meet-js-sdk",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "The JS SDK for MEET.ONE Client",
   "keywords": [],
   "main": "dist/meet-js-sdk.umd.js",
@@ -13,7 +13,7 @@
   "author": "JohnTrump <wujunchuan1994@hotmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/meetone/meet-js-sdk"
+    "url": "https://gitlab.com/meet-common/fe/meet-js-sdk"
   },
   "license": "MIT",
   "engines": {
