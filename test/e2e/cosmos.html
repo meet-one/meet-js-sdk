@@ -17,11 +17,10 @@
       meetwallet
         .load(
           new MeetJS.Cosmos(meetwallet, {
-            // protocol: 'https',
-            // host: 'cosmos-rpc.meet.one',
-            // port: 443
-            // httpEndPoint: 'https://lcd-app.cosmostation.io'
-            httpEndPoint: '/'
+            protocol: 'https',
+            host: 'cosmos-rpc.meet.one',
+            port: 443
+            // httpEndPoint: '/', /''$ npx http-server -o -c-1 -p 8081 -P "https://cosmos-rpc.meet.one"/
           })
         )
         .then(({ wallet, plugin }) => {

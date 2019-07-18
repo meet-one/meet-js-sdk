@@ -1,8 +1,13 @@
 # meet-js-sdk
 
+[![npm version](https://badge.fury.io/js/meet-js-sdk.svg)](https://badge.fury.io/js/meet-js-sdk)
+[![js deliver](https://data.jsdelivr.com/v1/package/npm/meet-js-sdk/badge)](https://data.jsdelivr.com/v1/package/npm/meet-js-sdk/badge)
+
 更好的 Typescript 支持, 更好的类型提示, 更友好的 API 接口
 
-Better powered by Typescript, Better Intelligent code completion, Better friendly API
+Better Typescript support, Better Intelligent code completion, Better friendly APIs
+
+- [Detail APIs](https://meet-common.gitlab.io/fe/meet-js-sdk/index.html)
 
 <!-- TOC -->
 
@@ -27,9 +32,6 @@ Better powered by Typescript, Better Intelligent code completion, Better friendl
       - [plugin.transaction](#plugintransaction)
       - [plugin.transfer](#plugintransfer)
     - [Cosmos](#cosmos)
-      - [plugin.requestArbitrarySignature](#pluginrequestarbitrarysignature)
-        - [How to sign](#how-to-sign)
-        - [How to verify signature](#how-to-verify-signature)
       - [Transactions](#transactions)
         - [plugin.transfer](#plugintransfer-1)
         - [plugin.delegate / plugin.undelegate](#plugindelegate--pluginundelegate)
@@ -37,6 +39,9 @@ Better powered by Typescript, Better Intelligent code completion, Better friendl
         - [plugin.submitProposal](#pluginsubmitproposal)
         - [plugin.deposit](#plugindeposit)
         - [plugin.vote](#pluginvote)
+      - [plugin.requestArbitrarySignature](#pluginrequestarbitrarysignature)
+        - [How to sign](#how-to-sign)
+        - [How to verify signature](#how-to-verify-signature)
       - [Generate Custom Msgs](#generate-custom-msgs)
   - [Contribute Guide](#contribute-guide)
     - [Run Unit Test](#run-unit-test)
@@ -652,77 +657,6 @@ let res = await plugin.transfer('g.f.w', 0.0001, 'Transfer Memo', 'Order Info')
 
 ### Cosmos
 
-#### plugin.requestArbitrarySignature
-
-```
-plugin.requestArbitrarySignature(signObject: any)
-```
-
-**Parameters**
-
-**Returns**
-
-`Promise<ClientResponse>`
-
-**Example**
-
-```js
-let signData = 'hello world'
-let res = await plugin.requestArbitrarySignature(signData)
-Promise<ClientResponse> >>>
-
-{
-  code: 0,
-  type: 0,
-  data: {
-    publicKey: 'cosmos1jwgdw55ssd3zdwfgm20sh6pc5kmwzfqdg84m4g',
-    signature: 'a69d3ed83aca5af910de2b05115657bff3ed384750c1aeb7d9bfce4b5bf83f3010714584e1d5a7007db9ede5db4087724fe7c01ac273781f565bfa44d8590448'
-  }
-}
-
-```
-
-##### How to sign
-
-```js
-const secp256k1 = require('secp256k1') // https://github.com/cryptocoinjs/secp256k1-node
-
-const hash = crypto
-  .createHash('sha256')
-  .update(signData)
-  .digest('hex')
-const buf = Buffer.from(hash, 'hex')
-// `ecpairPriv` 为私钥
-let signObj = secp256k1.sign(buf, ecpairPriv)
-
-// 签名结果
-let signatureBase64 = Buffer.from(signObj.signature, 'binary').toString('hex')
-```
-
-##### How to verify signature
-
-下面以 `secp256k1-node`库为例
-
-```js
-const secp256k1 = require('secp256k1') // https://github.com/cryptocoinjs/secp256k1-node
-
-// Public Key Byte
-const pubKeyByte = secp256k1.publicKeyCreate(ecpairPriv)
-
-// secp256k1.verify(Buffer message, Buffer signature, Buffer publicKey)
-var isVerify = secp256k1.verify(
-  buf,
-  // signObj.signature,
-  Buffer.from(
-    'a69d3ed83aca5af910de2b05115657bff3ed384750c1aeb7d9bfce4b5bf83f3010714584e1d5a7007db9ede5db4087724fe7c01ac273781f565bfa44d8590448',
-    'hex'
-  ),
-  Buffer.from(pubKeyByte, 'binary')
-)
-
-console.log(isVerify) // true
-```
-
 #### Transactions
 
 封装好的事务相关操作, 只需要传入对应参数, 即可发送事务到链上
@@ -1065,6 +999,77 @@ let res = await plugin.vote({
 if (res.txhash && typeof res.code === 'undefined') {
   // success(e)
 }
+```
+
+#### plugin.requestArbitrarySignature
+
+```
+plugin.requestArbitrarySignature(signObject: any)
+```
+
+**Parameters**
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+let signData = 'hello world'
+let res = await plugin.requestArbitrarySignature(signData)
+Promise<ClientResponse> >>>
+
+{
+  code: 0,
+  type: 0,
+  data: {
+    publicKey: 'cosmos1jwgdw55ssd3zdwfgm20sh6pc5kmwzfqdg84m4g',
+    signature: 'a69d3ed83aca5af910de2b05115657bff3ed384750c1aeb7d9bfce4b5bf83f3010714584e1d5a7007db9ede5db4087724fe7c01ac273781f565bfa44d8590448'
+  }
+}
+
+```
+
+##### How to sign
+
+```js
+const secp256k1 = require('secp256k1') // https://github.com/cryptocoinjs/secp256k1-node
+
+const hash = crypto
+  .createHash('sha256')
+  .update(signData)
+  .digest('hex')
+const buf = Buffer.from(hash, 'hex')
+// `ecpairPriv` 为私钥
+let signObj = secp256k1.sign(buf, ecpairPriv)
+
+// 签名结果
+let signatureBase64 = Buffer.from(signObj.signature, 'binary').toString('hex')
+```
+
+##### How to verify signature
+
+下面以 `secp256k1-node`库为例
+
+```js
+const secp256k1 = require('secp256k1') // https://github.com/cryptocoinjs/secp256k1-node
+
+// Public Key Byte
+const pubKeyByte = secp256k1.publicKeyCreate(ecpairPriv)
+
+// secp256k1.verify(Buffer message, Buffer signature, Buffer publicKey)
+var isVerify = secp256k1.verify(
+  buf,
+  // signObj.signature,
+  Buffer.from(
+    'a69d3ed83aca5af910de2b05115657bff3ed384750c1aeb7d9bfce4b5bf83f3010714584e1d5a7007db9ede5db4087724fe7c01ac273781f565bfa44d8590448',
+    'hex'
+  ),
+  Buffer.from(pubKeyByte, 'binary')
+)
+
+console.log(isVerify) // true
 ```
 
 #### Generate Custom Msgs
