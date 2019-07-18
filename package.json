@@ -1,6 +1,6 @@
 {
   "name": "meet-js-sdk",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "The JS SDK for MEET.ONE Client",
   "keywords": [],
   "main": "dist/meet-js-sdk.umd.js",
