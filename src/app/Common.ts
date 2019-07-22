@@ -22,10 +22,15 @@ export default class Common {
    * 跳转到指定页面中
    * Open a client page
    * @param {string} target 指定的页面名称 The client page name
+   * @param external 是否为外部跳转, if true, will return `{ code: 0, data: { message: 'Call the App from external' } }`
    * @param {(object | undefined)} [options] 传递给页面的参数 Options param will pass to client page
    */
-  navigate(target: string, options?: object | undefined): Promise<ClientResponse> {
-    return this.bridge.generate('app/navigate', { target, options })
+  navigate(
+    target: string,
+    external?: boolean,
+    options?: object | undefined
+  ): Promise<ClientResponse> {
+    return this.bridge.generate('app/navigate', { target, options }, { external })
   }
 
   /**
@@ -80,9 +85,10 @@ export default class Common {
    * 打开一个网页
    * Open a webview in client
    * @param url 要跳转的目标地址
+   * @param external 是否为外部跳转, if true, will return `{ code: 0, data: { message: 'Call the App from external' } }`
    */
-  webview(url: string): Promise<ClientResponse> {
-    return this.bridge.generate('app/webview', { url })
+  webview(url: string, external?: boolean): Promise<ClientResponse> {
+    return this.bridge.generate('app/webview', { url }, { external })
   }
 
   /**

@@ -28,12 +28,35 @@ export class MeetWallet extends Common {
   nodeInfo!: NodeInfo
   /** 当前链 */
   plugin: Blockchian | undefined
+  /** 是否为MEETONE外部打开 */
+  isExternal!: boolean
+  tryTimes: number
+  detectIsExternalInterval: NodeJS.Timeout | undefined
 
   constructor(initConfig?: Config) {
     super(Object.assign({}, defaultConfig, initConfig, { version: version }))
     this.config = Object.assign({}, defaultConfig, initConfig, { version: version })
+    this.tryTimes = 0
     // for browsers
     if (typeof window !== 'undefined') {
+      // Notice: `window.scatter` inject will take some delay, So we need to setInterval to check `window.scatter`
+      this.detectIsExternalInterval = setInterval(() => {
+        // @ts-ignore
+        this.isExternal = window.scatter ? window.scatter.wallet !== 'MEETONE' : true
+        this.tryTimes++
+        if (this.detectIsExternalInterval && this.tryTimes >= 10) {
+          clearInterval(this.detectIsExternalInterval)
+          this.detectIsExternalInterval = undefined
+        }
+      }, 100)
+      // if the event `scatterLoaded` already(make sure `window.scatter` is exists)
+      // then get `window.scatter.wallet` to detect is in MEETONE wallet or not
+      document.addEventListener('scatterLoaded', () => {
+        if (this.detectIsExternalInterval) {
+          clearInterval(this.detectIsExternalInterval)
+          this.detectIsExternalInterval = undefined
+        }
+      })
       if (document.readyState !== 'loading') {
         this._init()
       } else {
@@ -71,7 +94,7 @@ export class MeetWallet extends Common {
               appVersion: Tool.getQueryString('meetone_version'),
               language: Tool.getQueryString('lang'),
               platform: Tool.getQueryString('system_name'),
-              isMeetOne: Tool.getQueryString('meetone') === 'true',
+              isMeetOne: !this.isExternal,
               isFromUrl: true
             }
           }

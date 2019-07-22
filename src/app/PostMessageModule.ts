@@ -24,7 +24,12 @@ class PostMessage {
     path: string,
     payload: object,
     options?:
-      | { protocol?: string | undefined; callbackId?: string | undefined; callback?: () => any }
+      | {
+          protocol?: string | undefined
+          callbackId?: string | undefined
+          callback?: () => any
+          external?: boolean
+        }
       | undefined
   ): Promise<any> {
     // browser
@@ -35,7 +40,11 @@ class PostMessage {
         window[options.callbackId] = options.callback || function() {}
         const message = this.generateMessage(path, payload, Object.assign(options))
         this.config.isDebug && console.debug(`send: ${path}`, message)
-        this.sendMessage(message)
+        if (options.external) {
+          window && window.open(message, '_self')
+        } else {
+          this.sendMessage(message)
+        }
         // @ts-ignore
         return window[options.callbackId]
       }
@@ -46,7 +55,7 @@ class PostMessage {
         const callbackId = (options && options.callbackId) || this.getCallbackId()
         const message = this.generateMessage(path, payload, Object.assign({ callbackId }, options))
         that.config.isDebug && console.debug(`send: ${path}`, message)
-        this.sendMessage(message)
+
         // @ts-ignore
         window[callbackId] = function(result: ClientResponse) {
           that.config.isDebug && console.debug(`window[${callbackId}]:`, result)
@@ -68,9 +77,17 @@ class PostMessage {
           }
         }
 
+        if (options && options.external) {
+          window && window.open(message, '_self')
+          // @ts-ignore
+          window[callbackId]({ code: 0, data: { message: 'Call the App from external' } })
+        } else {
+          this.sendMessage(message)
+        }
+
         // @ts-ignore
         if (window.isSupportMeetoneSdk) {
-          // 超时时间设定, 因为不能比较好的兼容旧版本,只能在新版本发包前,往已有的JS中注入全局变量 `isSupportMeetoneSdk`来兼容
+          // 超时时间设定, 因为不能比较好的兼容旧版本,只能在新版本发包前(>=2.6.0),往已有的JS中注入全局变量 `isSupportMeetoneSdk`来兼容
           // meet-inject set `isSupportMeetoneSdk`
           setTimeout(() => {
             // @ts-ignore
