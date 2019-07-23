@@ -216,7 +216,7 @@ console.log(wallet.nodeInfo)
 ### wallet.navigate
 
 ```
-wallet.navigate(target, options)
+wallet.navigate(target, external?: boolean, options?)
 ```
 
 跳转到指定页面中 Jump to the specified page
@@ -224,6 +224,7 @@ wallet.navigate(target, options)
 **Parameters**
 
 - target: string 指定的页面名称 (The specified page name)
+- external? boolean - 是否从外部唤起客户端(is call MEET.ONE client from external browser)
 - options?: Object 传递给页面的参数 (The parameters will pass to specified page)
 
 **Returns**
@@ -235,26 +236,35 @@ wallet.navigate(target, options)
 ```js
 // 成功跳转
 // successful
-await wallet.navigated('EOSNodeVoteProxyPage')
-
+await wallet.navigated('EOSNodeVoteProxyPage', wallet.isExternal)
+// Success[in MEET.ONE dapps browser]
 Promise >>>
-  {
-    code: 0,
-    type: 0,
-    data: {}
+{
+  code: 0,
+  type: 0,
+  data: {}
+}
+
+// Success[in External browser, will attemp to call MEET.ONE client]
+Promise<ClientResponse> >>>
+{
+  code: 0,
+  data: {
+    message: 'Call the App from external'
   }
+}
 
 // 找不到页面
 // not found
 await wallet.navigate('undefinedView', undefined)
 Promise >>>
-  {
-    code: 404,
-    type: 404,
-    data: {
-      message: '协议或目标找不到' // protocol or target undefined
-    }
+{
+  code: 404,
+  type: 404,
+  data: {
+    message: '协议或目标找不到' // protocol or target undefined
   }
+}
 ```
 
 ### wallet.shareText
@@ -391,14 +401,15 @@ Promise<ClientResponse> >>>
 ### wallet.webview
 
 ```
-wallet.webview(url: string)
+wallet.webview(url: string, external?: boolean)
 ```
 
 在应用内打开网页 Open a webpage in client
 
 **Parameters**
 
-url: string - 要跳转的目标地址 (The webpage url)
+- url: string - 要跳转的目标地址 (The webpage url)
+- external? boolean - 是否从外部唤起客户端(is call MEET.ONE client from external browser)
 
 **Returns**
 
@@ -407,15 +418,22 @@ url: string - 要跳转的目标地址 (The webpage url)
 **Example**
 
 ```js
-await wallet.webview('https://meet.one')
-// Success
+await wallet.webview('https://meet.one', wallet.isExternal)
+// Success[in MEET.ONE dapps browser]
 Promise<ClientResponse> >>>
 {
   code: 0,
   type: 7,
   data: {}
 }
-
+// Success[in External browser, will attemp to call MEET.ONE client]
+Promise<ClientResponse> >>>
+{
+  code: 0,
+  data: {
+    message: 'Call the App from external'
+  }
+}
 ```
 
 ### wallet.webviewMenu
