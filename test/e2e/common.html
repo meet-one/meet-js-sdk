@@ -48,7 +48,6 @@
       testWebview = async e => {
         executing(e)
         try {
-          // 很早之前的版本留下的判断是否在钱包内的标志 `window.scatter.wallet === 'MEETONE'`
           let result = await wallet.webview(
             'https://meet.one?nav_alpha=1',
             // 如果是在客户端内, 则直接打开页面; 如果是在外部打开, 则走外部唤起客户端逻辑

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- 浏览器头部样式效果测试 -->
+    <title>E2E Testing - BrowserHeader Styles</title>
+    <!-- necessary import -->
+    <script src="../../dist/meet-js-sdk.umd.js"></script>
+    <script src="https://cdn.bootcss.com/vConsole/3.3.0/vconsole.min.js"></script>
+    <script src="./script.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+    <script>
+      wallet = new MeetJS.MeetWallet({ isDebug: true })
+      testWebview = async (e, target) => {
+        executing(e)
+        try {
+          let result = await wallet.webview(
+            target,
+            // 如果是在客户端内, 则直接打开页面; 如果是在外部打开, 则走外部唤起客户端逻辑
+            wallet.isExternal
+          )
+          if (result.code === 0) {
+            success(e)
+          } else {
+            failed(e)
+          }
+          return true
+        } catch (error) {
+          failed(e)
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Tests - BrowserHeader</h1>
+    <button onClick="runAllTests();">Run All Tests</button>
+
+    <div class="tests">
+      <!-- hide share button -->
+      <!-- 隐藏右侧按钮 -->
+      <!-- TODO: 没了? -->
+      <div>
+        <h2>hide_share</h2>
+        <button onClick="testWebview(event, 'https://meet.one?hide_share=1');">Test</button>
+      </div>
+
+      <!-- make browser header transparency -->
+      <!-- 导航栏变透明 -->
+      <div>
+        <!-- 始终显示标题, 背景始终透明 -->
+        <h2>nav_alpha=1</h2>
+        <button onClick="testWebview(event, 'https://meet.one?nav_alpha=1');">Test</button>
+      </div>
+
+      <div>
+        <!-- 始终显示标题, 页面上滑后, 导航栏背景alpha从1-0(透明到不透明) -->
+        <h2>nav_alpha=2</h2>
+        <button onClick="testWebview(event, 'https://meet.one?nav_alpha=2');">Test</button>
+      </div>
+
+      <div>
+        <!-- 初始状态标题栏不显示, 页面上滑后, 导航栏背景alpha从0-1(不透明到透明) -->
+        <h2>nav_alpha=3</h2>
+        <button onClick="testWebview(event, 'https://meet.one?nav_alpha=3');">Test</button>
+      </div>
+
+      <!-- hide the whole browser header -->
+      <!-- 隐藏整个导航栏 -->
+      <div>
+        <h2>simple_left</h2>
+        <button onClick="testWebview(event, 'https://meet.one?simple_left=1');">Test</button>
+      </div>
+
+      <!-- nav_mode -->
+      <!-- DApp -->
+      <div>
+        <h2>nav_mode</h2>
+        <button onClick="testWebview(event, 'https://meet.one?nav_mode=1');">Test</button>
+      </div>
+
+      <!-- nav_color -->
+      <!-- 导航栏背景颜色, 支持配置具体的色值 -->
+      <div>
+        <h2>nav_mode</h2>
+        <button onClick="testWebview(event, 'https://meet.one?nav_color=22A9EF');">
+          Test
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
