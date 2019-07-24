@@ -32,6 +32,9 @@ Better Typescript support, Better Intelligent code completion, Better friendly A
       - [plugin.transaction](#plugintransaction)
       - [plugin.transfer](#plugintransfer)
     - [Cosmos](#cosmos)
+      - [Identity](#identity)
+        - [plugin.getIdentity](#plugingetidentity-1)
+        - [plugin.account](#pluginaccount)
       - [Transactions](#transactions)
         - [plugin.transfer](#plugintransfer-1)
         - [plugin.delegate / plugin.undelegate](#plugindelegate--pluginundelegate)
@@ -674,6 +677,57 @@ let res = await plugin.transfer('g.f.w', 0.0001, 'Transfer Memo', 'Order Info')
 ```
 
 ### Cosmos
+
+#### Identity
+
+获取当前账号的信息
+
+##### plugin.getIdentity
+
+获取账户信息, 初始化时就会自动调用, 如果传入参数为 true, 则每次都去链上更新, 如果为 false 则优先取缓存中的数据
+
+Get current account information.
+
+If `forceUpdate` is true, will be updated everytime;
+
+If `forceUpdate` is false, will get in cache first
+
+```ts
+interface Account {
+  address: string
+  coins: Coin[]
+  public_key: {
+    type: string
+    value: string
+  }
+  account_number: string
+  sequence: string
+}
+
+plugin.getIdentity(forceUpdate?: boolean): Promise<Account>
+
+```
+
+**Returns**
+
+`Promise<Account>`
+
+**Example**
+
+```js
+let res = await plugin.getIdentity(true)
+console.log(JSON.stringify(res)) // {address: "cosmos1jwgdw55ssd3zdwfgm20sh6pc5kmwzfqdg84m4g", coins: [{denom: "uatom", amount: "402575"}], public_key: {type: "tendermint/PubKeySecp256k1", value: "AyjefySdsjZ4WzXpTr12x+S2wpy2N+Lk94wdCRsHPw87"}, account_number: "12519", sequence: "382"}
+```
+
+##### plugin.account
+
+在 plugin 初始化的时候会自动调用`plugin.getIdentity()`这个方法，并将返回结果附加在属性`account`上
+
+因此可以直接使用`plugin.account`获取, 需要更新再调用 [plugin.getIdentity()](#plugingetidentity-1)
+
+In this plugin initialization lifecycle will invoke `plugin.getIdentity()`.
+
+So you can get the account information by `plugin.account`(If need update account information, need invoke [plugin.getIdentity()](#plugingetidentity-1))
 
 #### Transactions
 
