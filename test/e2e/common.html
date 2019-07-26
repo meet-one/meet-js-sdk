@@ -14,7 +14,9 @@
     <link rel="stylesheet" href="./style.css" />
 
     <script>
-      wallet = new MeetJS.MeetWallet({ isDebug: true })
+      wallet = new MeetJS.MeetWallet({ isDebug: true }).isInApp(result => {
+        alert(result)
+      })
 
       isSupportSDK = async e => {
         executing(e)
@@ -97,7 +99,7 @@
       getAppInfo = async e => {
         executing(e)
         try {
-          let result = await wallet.getAppInfo(true)
+          let result = await wallet.getAppInfo()
           alert(JSON.stringify(result))
           if (result.code === 0) {
             if (result.data.isMeetOne) {

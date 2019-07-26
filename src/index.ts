@@ -4,7 +4,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-07-03 14:23:36
+ * @Last Modified time: 2019-07-25 22:14:45
  */
 
 import Common from './app/Common'
@@ -29,7 +29,7 @@ export class MeetWallet extends Common {
   /** 当前链 */
   plugin: Blockchian | undefined
   /** 是否为MEETONE外部打开 */
-  isExternal!: boolean
+  isExternal: boolean | undefined
   tryTimes: number
   detectIsExternalInterval: NodeJS.Timeout | undefined
 
@@ -42,7 +42,7 @@ export class MeetWallet extends Common {
       // Notice: `window.scatter` inject will take some delay, So we need to setInterval to check `window.scatter`
       this.detectIsExternalInterval = setInterval(() => {
         // @ts-ignore
-        this.isExternal = window.scatter ? window.scatter.wallet !== 'MEETONE' : true
+        this.isExternal = window.scatter && window.scatter.wallet === 'MEETONE' ? false : true
         this.tryTimes++
         if (this.detectIsExternalInterval && this.tryTimes >= 10) {
           clearInterval(this.detectIsExternalInterval)
@@ -51,12 +51,6 @@ export class MeetWallet extends Common {
       }, 100)
       // if the event `scatterLoaded` already(make sure `window.scatter` is exists)
       // then get `window.scatter.wallet` to detect is in MEETONE wallet or not
-      document.addEventListener('scatterLoaded', () => {
-        if (this.detectIsExternalInterval) {
-          clearInterval(this.detectIsExternalInterval)
-          this.detectIsExternalInterval = undefined
-        }
-      })
       if (document.readyState !== 'loading') {
         this._init()
       } else {
@@ -70,10 +64,23 @@ export class MeetWallet extends Common {
   }
 
   /**
+   * 判断当前环境是否在MEETONE客户端内
+   */
+  isInApp(callback: Function) {
+    // @ts-ignore
+    this.isExternal = window.scatter && window.scatter.wallet === 'MEETONE' ? false : true
+    setTimeout(() => {
+      callback(!this.isExternal)
+    }, 100)
+    return this
+  }
+
+  /**
    * 获取当前APP客户端信息
-   * @param forceUpdate 默认为false, 如果为false,则从当前缓存中获取
+   * @param forceUpdate 默认为true, 如果为false,则从当前缓存中获取
    */
   getAppInfo(forceUpdate?: boolean): Promise<AppInfoResponse> {
+    if (forceUpdate === undefined) forceUpdate = true
     if (!forceUpdate && this.appInfo) {
       // 如果当前账号信息不为空, 可直接返回
       return new Promise(resolve => resolve({ code: 0, type: 0, data: this.appInfo }))
@@ -83,7 +90,7 @@ export class MeetWallet extends Common {
     return Promise.race([
       this.bridge.generate('app/info', {}),
       // 这是为了兼容旧版本, 旧版本没有这个协议,所以需要模拟
-      new Promise((resolve, reject) => {
+      new Promise(async (resolve, reject) => {
         if (typeof window !== 'undefined') {
           let response: AppInfoResponse = {
             code: 0,
@@ -94,13 +101,13 @@ export class MeetWallet extends Common {
               appVersion: Tool.getQueryString('meetone_version'),
               language: Tool.getQueryString('lang'),
               platform: Tool.getQueryString('system_name'),
-              isMeetOne: !this.isExternal,
+              isMeetOne: Tool.getQueryString('meetone') === 'true',
               isFromUrl: true
             }
           }
           setTimeout(() => {
             resolve(response)
-          }, 10 * 1000)
+          }, 0.5 * 1000)
         } else {
           reject()
         }

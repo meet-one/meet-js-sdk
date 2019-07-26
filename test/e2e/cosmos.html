@@ -13,10 +13,10 @@
 
     <script>
       let ratio = 1000000
-      let meetwallet = new MeetJS.MeetWallet({ isDebug: true })
-      meetwallet
+      let wallet = new MeetJS.MeetWallet({ isDebug: true })
+      wallet
         .load(
-          new MeetJS.Cosmos(meetwallet, {
+          new MeetJS.Cosmos(wallet, {
             protocol: 'https',
             host: 'cosmos-rpc.meet.one',
             port: 443
@@ -51,7 +51,7 @@
                 fee: 0.0015 * ratio,
                 gas: 0.15 * ratio, // 150000
                 memo: 'js-sdk test',
-                delegator_address: meetwallet.plugin.address,
+                delegator_address: wallet.plugin.address,
                 validator_address: 'cosmosvaloper1u724thtn8z47nw9nvel367m3qh0gqnxe4g555a'
               })
               console.info(res)
@@ -75,7 +75,7 @@
                 fee: 0.0015 * ratio,
                 gas: 0.22 * ratio, // 22000
                 memo: 'js-sdk test',
-                depositor: meetwallet.plugin.address,
+                depositor: wallet.plugin.address,
                 proposal_id: 11
               })
               console.info(res)
@@ -98,7 +98,7 @@
                 fee: 0.0015 * ratio,
                 gas: 0.08 * ratio, // 80000
                 memo: 'js-sdk test',
-                delegator_address: meetwallet.plugin.address,
+                delegator_address: wallet.plugin.address,
                 validator_address: 'cosmosvaloper1u724thtn8z47nw9nvel367m3qh0gqnxe4g555a'
               })
               console.info(res)
@@ -122,7 +122,7 @@
                 fee: 0.0015 * ratio,
                 gas: 0.15 * ratio, // 150000
                 memo: 'js-sdk test',
-                delegator_address: meetwallet.plugin.address,
+                delegator_address: wallet.plugin.address,
                 validator_address: 'cosmosvaloper1u724thtn8z47nw9nvel367m3qh0gqnxe4g555a'
               })
               console.info(res)
@@ -146,7 +146,7 @@
                 fee: 0.0015 * ratio,
                 gas: 0.22 * ratio, // 150000
                 memo: 'js-sdk test',
-                delegator: meetwallet.plugin.address,
+                delegator: wallet.plugin.address,
                 to_validator: 'cosmosvaloper1u724thtn8z47nw9nvel367m3qh0gqnxe4g555a',
                 from_validator: 'cosmosvaloper102ruvpv2srmunfffxavttxnhezln6fnc54at8c'
               })
@@ -197,7 +197,7 @@
                 memo: 'js-sdk test',
                 option: 'Yes', // must be ["Yes", "No", "No with Veto", "Abstain"]
                 proposal_id: '10',
-                voter: meetwallet.plugin.address
+                voter: wallet.plugin.address
               })
               if (res.txhash && typeof res.code === 'undefined') {
                 success(e)
@@ -222,7 +222,7 @@
                 title: 'proposal_title',
                 description: 'proposal_description',
                 initialDepositAmount: 1,
-                proposer: meetwallet.plugin.address
+                proposer: wallet.plugin.address
               })
               if (res.txhash && typeof res.code === 'undefined') {
                 success(e)

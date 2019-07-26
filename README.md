@@ -15,6 +15,7 @@ Better Typescript support, Better Intelligent code completion, Better friendly A
   - [Quick Start](#quick-start)
     - [Browser](#browser)
   - [Common](#common)
+    - [wallet.isInApp](#walletisinapp)
     - [wallet.load](#walletload)
     - [wallet.getAppInfo](#walletgetappinfo)
     - [wallet.getChainInfo](#walletgetchaininfo)
@@ -100,6 +101,18 @@ wallet.load(new MeetJS.Eos(wallet, {})).then(({ wallet, plugin }) => {
 ```
 
 ## Common
+
+### wallet.isInApp
+
+判断当前浏览器环境是否在 MEET.ONE 客户端内
+
+detect current enviroment is in MEET.ONE client or not
+
+```js
+wallet = new MeetJS.MeetWallet({ isDebug: true }).isInApp(result => {
+  alert(result) // true - in MEET.ONE Dapps Browsers; false - not in MEET.ONE Dapps Browsers
+})
+```
 
 ### wallet.load
 
