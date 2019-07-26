@@ -1,12 +1,12 @@
-const { cd, exec, echo, touch, cp } = require("shelljs")
-const { readFileSync } = require("fs")
-const url = require("url")
+const { cd, exec, echo, touch, cp } = require('shelljs')
+const { readFileSync } = require('fs')
+const url = require('url')
 
 let repoUrl
-let pkg = JSON.parse(readFileSync("package.json") as any)
-if (typeof pkg.repository === "object") {
-  if (!pkg.repository.hasOwnProperty("url")) {
-    throw new Error("URL does not exist in repository section")
+let pkg = JSON.parse(readFileSync('package.json') as any)
+if (typeof pkg.repository === 'object') {
+  if (!pkg.repository.hasOwnProperty('url')) {
+    throw new Error('URL does not exist in repository section')
   }
   repoUrl = pkg.repository.url
 } else {
@@ -14,19 +14,19 @@ if (typeof pkg.repository === "object") {
 }
 
 let parsedUrl = url.parse(repoUrl)
-let repository = (parsedUrl.host || "") + (parsedUrl.path || "")
-let ghToken = process.env.GH_TOKEN || 'gFm7sAJT_6H-hZDz8mxK';
+let repository = (parsedUrl.host || '') + (parsedUrl.path || '')
+let ghToken = process.env.GH_TOKEN || 'gFm7sAJT_6H-hZDz8mxK'
 
-echo("Deploying docs!!!")
-cd("docs")
+echo('Deploying docs!!!')
+cd('docs')
 cp('../.gitlab-ci.yml', '.gitlab-ci.yml')
-touch(".nojekyll")
-exec("git init")
-exec("git add .")
+touch('.nojekyll')
+exec('git init')
+exec('git add .')
 exec('git config user.name "JohnTrump"')
 exec('git config user.email "wujunchuan1994@hotmail.com"')
 exec('git commit -m "docs(docs): update gh-pages"')
 exec(
-  `git push --force --quiet "https://${ghToken}@${repository}" master:gh-pages`
+  `git push --force --quiet "https://${ghToken}@gitlab.com/meet-common/fe/meet-js-sdk" master:gh-pages`
 )
-echo("Docs deployed!!")
+echo('Docs deployed!!')
