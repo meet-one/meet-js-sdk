@@ -105,11 +105,59 @@ export default class Common {
     )
   }
 
-  // 一些协议设想
-  // close() 关闭当前页面(页面堆栈的最顶层pop)
-  // back() 后退操作
-  // fullScreen() 全屏显示页面
-  // rollHorizontal(horizontal: boolean = false) 旋转显示
-  // popGestureRecognizerEnable(enable: boolean = true) 禁止iOS自带的左滑手势返回，据说Android无效?是因为Andorid实现上有困难吗
-  // forwardNavigationGesturesEnable(enable: boolean = true) 禁止webview自带的左滑手势触发goback,据说Android无效?是因为Andorid实现上有困难吗
+  /**
+   * 关闭当前浏览器页面(页面堆栈的最顶层pop)
+   * Close current browser
+   */
+  close() {
+    return this.bridge.generate('web/close', {})
+  }
+  /**
+   * 后退操作
+   * Back operation
+   */
+  back() {
+    return this.bridge.generate('web/back', {})
+  }
+
+  /**
+   * 控制是否为全屏显示
+   * Control fullscreen whether or not
+   * @param isFullScreen true - fullscreen; false - not fullscreen
+   */
+  fullScreen(isFullScreen: boolean = false) {
+    return this.bridge.generate('app/fullscreen', { isFullScreen })
+  }
+
+  /**
+   * 控制 Dapps 浏览器是否水平显示
+   * Control Dapps browser horizontal or vertical
+   * @param {boolean} [isHorizontal=false] true - display horizontal; false - display vertical(default)
+   */
+  horizontal(isHorizontal: boolean = false) {
+    return this.bridge.generate('app/horizontal', { isHorizontal })
+  }
+
+  /**
+   * 禁止当前页面手势判断操作(当前webview中有效)，客户端默认的手势的判断包括: 左滑前进, 右滑后退操作
+   * Disable the left-sliding gesture to forward, right-sliding gesture to back
+   * @param isDisableGestures true - disable default gestures; false - enable gestures
+   */
+  gestures(isDisableGestures: boolean = false) {
+    return this.bridge.generate('app/gestures', { isDisableGestures })
+  }
+
+  /**
+   * 显示切换钱包的弹窗
+   * Display the popups about wallet switcher
+   * 应用场景： 用户打开的Dapp为COSMOS链类型，但是当前钱包为EOS链类型的， 这个时候就出问题了， 所以需要阻塞后续逻辑， 提醒用户切换钱包/导入钱包
+   * 客户端逻辑:
+   *   如果有指定`type`则显示指定的`type`类型的钱包列表
+   *      如果指定`type`类型的钱包列表为空, 则跳转到对应`type`的钱包导入页面
+   *   如果没有指定`type`类型, 则显示当前所有的类型的钱包列表
+   */
+  switchWallet(type: string = '') {
+    type = type.trim().toLowerCase()
+    return this.bridge.generate('app/switchwallet', { type })
+  }
 }

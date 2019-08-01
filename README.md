@@ -1212,7 +1212,8 @@ npm run test:watch
 
 ```
 cd meet-js-sdk/
-npm run start && npx http-server -o -c-1
+npm run start
+npx http-server -o -c-1 -p 8081 // http://127.0.0.1:8081/test/e2e/
 ```
 
 ## Change Log
