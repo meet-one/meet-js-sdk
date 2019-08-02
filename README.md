@@ -25,6 +25,12 @@ Better Typescript support, Better Intelligent code completion, Better friendly A
     - [wallet.shareLink](#walletsharelink)
     - [wallet.webview](#walletwebview)
     - [wallet.webviewMenu](#walletwebviewmenu)
+    - [wallet.back](#walletback)
+    - [wallet.close](#walletclose)
+    - [wallet.fullScreen](#walletfullscreen)
+    - [wallet.horizontal](#wallethorizontal)
+    - [wallet.gestures](#walletgestures)
+    - [wallet.switchWallet](#walletswitchwallet)
   - [Plugin](#plugin)
     - [Eos](#eos)
       - [plugin.getEos [recommend]](#plugingeteos-recommend)
@@ -477,6 +483,182 @@ None
 wallet.webviewMenu('custom menu', () => {
   alert('you click the menu')
 })
+```
+
+### wallet.back
+
+```
+wallet.back()
+```
+
+后退操作
+
+Back operation
+
+**Parameters**
+
+None
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+let response = await wallet.back()
+if (response.code === 0) {
+  success(e)
+} else {
+  failed(e)
+}
+```
+
+### wallet.close
+
+```
+wallet.close()
+```
+
+关闭当前页面
+
+Close current webview
+
+**Parameters**
+
+None
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+let response = await wallet.close()
+if (response.code === 0) {
+  success(e)
+} else {
+  failed(e)
+}
+```
+
+### wallet.fullScreen
+
+```
+wallet.fullScreen(isFullScreen: boolean = false)
+```
+
+进入全屏模式
+
+Control fullscreen whether or not
+
+**Parameters**
+
+- isFullScreen
+  - true - fullscreen
+  - false - not fullscreen
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+isFullScreen = !isFullScreen
+let response = await wallet.fullScreen(isFullScreen)
+if (response.code === 0) {
+  success(e)
+} else {
+  failed(e)
+}
+```
+
+### wallet.horizontal
+
+```
+wallet.horizontal(isHorizontal: boolean = false)
+```
+
+控制 Dapps 浏览器是否水平显示
+
+Control Dapps browser horizontal or vertical
+
+**Parameters**
+
+- isHorizontal
+  - true - 水平显示 Horizontal
+  - false - 正常显示 Vertical(default)
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+let response = await wallet.horizontal()
+if (response.code === 0) {
+  success(e)
+} else {
+  failed(e)
+}
+```
+
+### wallet.gestures
+
+```
+wallet.gestures(isDisableGestures: boolean = false)
+```
+
+禁止当前页面手势判断操作(当前 webview 中有效)，客户端默认的手势的判断包括: 左滑前进, 右滑后退操作
+
+Disable the left-sliding gesture to forward, right-sliding gesture to back
+
+**Parameters**
+
+- isDisableGestures
+  - true - disable default gestures
+  - false - enable gestures
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+let response = await wallet.gestures(false)
+if (response.code === 0) {
+  success(e)
+} else {
+  failed(e)
+}
+```
+
+### wallet.switchWallet
+
+```
+wallet.switchWallet(type: string = '')
+```
+
+显示切换钱包的弹窗, 切换后刷新所有 webview
+
+Display the popups about wallet switcher, after then reload all webview
+
+**Parameters**
+
+type: enum['meetone', 'eos', 'bos', 'eth', 'cosmos']
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```
+let response = await wallet.switchWallet('meetone')
 ```
 
 ## Plugin
