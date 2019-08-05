@@ -105,6 +105,7 @@
     "validate-commit-msg": "^2.12.2"
   },
   "dependencies": {
-    "axios": "^0.19.0"
+    "axios": "^0.19.0",
+    "buffer": "^5.2.1"
   }
 }

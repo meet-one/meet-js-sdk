@@ -2,6 +2,7 @@ import { MeetWallet } from '../../index'
 import Blockchian from '../BlockChain'
 import { Blockchains } from '../SupportBlockchain'
 import { ClientResponse } from '../../app/Interface'
+import { Buffer } from 'buffer/'
 
 /** Eosjs signProvider params */
 interface EosSignProviderArgs {
@@ -126,7 +127,7 @@ export class EOS extends Blockchian {
   }
 
   /**
-   * 为Eosjs提供签名
+   * 为 Eosjs (<16.x)提供签名
    *
    * @param signargs signProvider参数
    *
@@ -139,6 +140,23 @@ export class EOS extends Blockchian {
           return res.data.signature
         } else {
           throw new Error('eos/sign_provider failed:\n' + JSON.stringify(res))
+        }
+      }
+    )
+  }
+
+  /**
+   * 为 Eosjs (>=20)提供签名
+   * @param signargs signProvider参数
+   */
+  eosSignProvider2(signargs: any): any {
+    return this.signProvider(signargs.buf, signargs.transaction.actions).then(
+      (res: { code: number; data: { signature: string } }) => {
+        if (res.code === 0) {
+          return {
+            signatures: [res.data.signature],
+            serializedTransaction: Buffer.from(signargs.serializedTransaction, 'hex')
+          }
         }
       }
     )
@@ -221,7 +239,7 @@ export class EOS extends Blockchian {
   }
 
   /**
-   * 获取Eosjs实例
+   * 获取Eosjs实例(<=16+)
    * @param Eos 获取EOSJS当前对象
    * @param eosOptions 附加的EosConfig配置[可选]
    */
@@ -256,6 +274,63 @@ export class EOS extends Blockchian {
         eosOptions
       )
     )
+  }
+
+  /**
+   * 获取Eosjs实例(>=20+)
+   */
+  getEos2(Api?: object, JsonRpc?: object) {
+    if (typeof Api === 'undefined') {
+      // @ts-ignore
+      if (typeof window.eosjs_api == 'undefined') {
+        throw new Error('eosjs_api not found!')
+      } else {
+        // @ts-ignore
+        Api = window.eosjs_api.Api
+      }
+    }
+
+    if (typeof JsonRpc === 'undefined') {
+      // @ts-ignore
+      if (typeof window.eosjs_jsonrpc == 'undefined') {
+        throw new Error('eosjs_jsonrpc not found!')
+      } else {
+        // @ts-ignore
+        JsonRpc = window.eosjs_jsonrpc.JsonRpc
+      }
+    }
+
+    let { host, port, protocol } = this.optionsConfig ? this.optionsConfig : this.wallet.nodeInfo
+    // @ts-ignore
+    const rpc = new JsonRpc(`${protocol}://${host}:${port}`, {})
+    // @ts-ignore
+    const api = new Api({ rpc })
+    let _this = this
+    let signatureProvider = {
+      requiredFields: {},
+      getAvailableKeys: function() {
+        if (_this.identity) {
+          return [_this.account.publicKey]
+        }
+        return []
+      },
+      sign: function(signargs: any) {
+        let buffer = Buffer.from(signargs.serializedTransaction, 'hex')
+        signargs.serializedTransaction = Buffer.from(signargs.serializedTransaction).toString('hex')
+        signargs.transaction = api.deserializeTransaction(buffer)
+        signargs.beta3 = true
+        signargs.buf = Buffer.concat([
+          new Buffer(signargs.chainId, 'hex'), // Chain ID
+          buffer, // Transaction
+          new Buffer(new Uint8Array(32)) // Context free actions
+        ])
+        return _this.eosSignProvider2(signargs)
+      }
+    }
+
+    // @ts-ignore
+    const eos = new Api({ rpc, signatureProvider })
+    return eos
   }
 
   /**
