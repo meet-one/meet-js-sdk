@@ -47,10 +47,13 @@
           })
         )
         .then(({ wallet, plugin }) => {
+          alert('Loaded')
+          // 参数1 默认取 window.eosjs_api.Api
+          // 参数2 默认取 window.eosjs_jsonrpc.JsonRpc
+          let eos = plugin.getEos2(eosjs_api.Api, eosjs_jsonrpc.JsonRpc)
           eosSignProvider = async e => {
             executing(e)
             let account = plugin.account
-            let eos = plugin.getEos2()
             try {
               let res = await eos.transact(
                 {

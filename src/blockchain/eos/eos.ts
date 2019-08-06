@@ -278,6 +278,8 @@ export class EOS extends Blockchian {
 
   /**
    * 获取Eosjs实例(>=20+)
+   * @param {object} [Api] https://eosio.github.io/eosjs/reference/modules/api.html
+   * @param {object} [JsonRpc] https://eosio.github.io/eosjs/reference/modules/json_rpc.html
    */
   getEos2(Api?: object, JsonRpc?: object) {
     if (typeof Api === 'undefined') {

@@ -34,6 +34,7 @@ Better Typescript support, Better Intelligent code completion, Better friendly A
   - [Plugin](#plugin)
     - [Eos](#eos)
       - [plugin.getEos [recommend]](#plugingeteos-recommend)
+      - [plugin.getEos2](#plugingeteos2)
       - [plugin.sign](#pluginsign)
       - [plugin.getIdentity](#plugingetidentity)
       - [plugin.transaction](#plugintransaction)
@@ -671,6 +672,8 @@ MEET.ONE Wallet have already supported _Scatter Protocols[recommend]_.(eosjs@16.
 
 #### plugin.getEos [recommend]
 
+Required Version: EosJS >= 16
+
 ```
 plugin.getEos(eosOptions?: EosConfig, Eos?: Object<Eos>)
 ```
@@ -693,6 +696,34 @@ plugin.getEos(eosOptions?: EosConfig, Eos?: Object<Eos>)
 ```js
 let eos = plugin.getEos();
 eos.transaction({...})
+```
+
+#### plugin.getEos2
+
+Required Version: EosJS >= 20
+
+```
+plugin.getEos(Api?: object, JsonRpc?: object)
+```
+
+使用此方法获取 `Eosjs` 实例, 签名部分由客户端代理(`signProvider`), 客户端只负责对数据做签名
+
+`plugin.getEos()` will return `Eosjs` instance object. All operations which need signature will be proxied by `plugin.signProvider()` and invoke client protocol to sign
+
+返回的 `Eosjs` 实例 API 请参考 [EOSIO/eosjs@20+](https://eosio.github.io/eosjs/)
+
+`Eosjs` instance object APIs please refer to [EOSIO/eosjs@20+](https://eosio.github.io/eosjs/)
+
+**Example**
+
+```js
+// Browser Distribution
+let eos = plugin.getEos2(eosjs_api.Api, eosjs_jsonrpc.JsonRpc)
+let res = await eos.transact({...})
+const { Api, JsonRpc } = require('eosjs'); // CommonJS
+// import { Api, JsonRpc } from 'eosjs'; // ES Modules
+let eos = plugin.getEos2(Api, JsonRpc)
+let res = await eos.transact({...})
 ```
 
 #### plugin.sign
