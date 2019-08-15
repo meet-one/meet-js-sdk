@@ -307,12 +307,12 @@ export class EOS extends Blockchian {
     const rpc = new JsonRpc(`${protocol}://${host}:${port}`, {})
     // @ts-ignore
     const api = new Api({ rpc })
-    let _this = this
+    let _self = this
     let signatureProvider = {
       requiredFields: {},
       getAvailableKeys: function() {
-        if (_this.identity) {
-          return [_this.account.publicKey]
+        if (_self.identity) {
+          return [_self.account.publicKey]
         }
         return []
       },
@@ -326,7 +326,7 @@ export class EOS extends Blockchian {
           buffer, // Transaction
           new Buffer(new Uint8Array(32)) // Context free actions
         ])
-        return _this.eosSignProvider2(signargs)
+        return _self.eosSignProvider2(signargs)
       }
     }
 

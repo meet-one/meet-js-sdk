@@ -6,7 +6,7 @@
   "main": "dist/meet-js-sdk.umd.js",
   "module": "dist/meet-js-sdk.es5.js",
   "iife": "dist/meet-js-sdk.iife.js",
-  "typings": "dist/types/meet-js-sdk.d.ts",
+  "types": "dist/types/index.d.ts",
   "files": [
     "dist"
   ],
