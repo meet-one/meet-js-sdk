@@ -1,6 +1,6 @@
 import { MeetWallet } from '../../index'
 import BlockChain from '../BlockChain'
-import { SupportBlockchainsEnum } from '../SupportBlockchain'
+import { SupportBlockchainEnums } from '../SupportBlockchain'
 import Network from '../../util/Network'
 import {
   node_info,
@@ -177,7 +177,7 @@ export class Cosmos extends BlockChain {
       SYSToken?: string
     }
   ) {
-    super(SupportBlockchainsEnum.COSMOS, wallet)
+    super(SupportBlockchainEnums.COSMOS, wallet)
     if (options) {
       this.httpEndpoint = options.httpEndPoint
         ? options.httpEndPoint
@@ -190,8 +190,8 @@ export class Cosmos extends BlockChain {
   /** 插件初始化逻辑 */
   init(): this {
     // 如果当前网络非Cosmos类型的, 则抛出错误
-    let type = this.wallet.nodeInfo.blockchain.toLowerCase() as SupportBlockchainsEnum
-    let supportTypes = [SupportBlockchainsEnum.COSMOS]
+    let type = this.wallet.nodeInfo.blockchain.toLowerCase() as SupportBlockchainEnums
+    let supportTypes = [SupportBlockchainEnums.COSMOS]
     if (!supportTypes.includes(type)) {
       // 询问用户是否切换网络[设想的 -> 切换后实现页面刷新重载]
       throw new Error(`Current Network Type is ${type}, No one of the ${supportTypes}`)

@@ -15,7 +15,7 @@ import Network from './util/Network'
 import Tool from './util/Tool'
 
 import Blockchian from './blockchain/BlockChain'
-import { SupportBlockchainsEnum } from './blockchain/SupportBlockchain'
+import { SupportBlockchainEnums } from './blockchain/SupportBlockchain'
 import { EOS } from './blockchain/eos/eos'
 import { Cosmos } from './blockchain/cosmos/cosmos'
 
@@ -204,4 +204,10 @@ export class MeetWallet extends Common {
   }
 }
 
-export { Network as http, Tool as util, EOS as Eos, Cosmos, SupportBlockchainsEnum }
+export {
+  Network as http,
+  Tool as util,
+  EOS as Eos,
+  Cosmos,
+  SupportBlockchainEnums as SupportBlockchainsEnum
+}

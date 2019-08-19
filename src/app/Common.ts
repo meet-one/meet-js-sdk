@@ -8,7 +8,7 @@
 import PostMessageModule from './PostMessageModule'
 import { NodeInfoResponse, Config, ClientResponse } from './Interface'
 import Network from '../util/Network'
-import { SupportBlockchainsEnum } from '../blockchain/SupportBlockchain'
+import { SupportBlockchainEnums } from '../blockchain/SupportBlockchain'
 
 export default class Common {
   bridge: PostMessageModule
@@ -172,7 +172,7 @@ export default class Common {
    *      如果指定`type`类型的钱包列表为空, 则跳转到对应`type`的钱包导入页面
    *   如果没有指定`type`类型, 则显示当前所有的类型的钱包列表
    */
-  switchWallet(type: SupportBlockchainsEnum) {
+  switchWallet(type: SupportBlockchainEnums) {
     let _type = type.trim().toLowerCase()
     return this.bridge.generate('app/switchwallet', { type: _type })
   }

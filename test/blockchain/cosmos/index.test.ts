@@ -1,6 +1,6 @@
 import { Cosmos } from '../../../src/blockchain/cosmos/cosmos'
 import { MeetWallet } from '../../../src'
-import { Blockchains } from '../../../src/blockchain/SupportBlockchain'
+import { SupportBlockchainEnums } from '../../../src/blockchain/SupportBlockchain'
 
 const CUSTOM_TIMEOUT = 10 * 1000
 
@@ -29,7 +29,7 @@ describe('COSMOS Module', () => {
   }).init()
 
   test('chain type: cosmos', () => {
-    expect(cosmos.chain === Blockchains.COSMOS).toBeTruthy()
+    expect(cosmos.chain === SupportBlockchainEnums.COSMOS).toBeTruthy()
   })
 
   test('cosmos get node info', async () => {

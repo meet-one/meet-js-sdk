@@ -6,7 +6,7 @@
  * @Last Modified time: 2019-07-01 11:21:49
  */
 
-export enum SupportBlockchainsEnum {
+export enum SupportBlockchainEnums {
   EOS = 'eos',
   MEETONE = 'meet.one',
   MEETONE_2 = 'meetone',
@@ -14,12 +14,3 @@ export enum SupportBlockchainsEnum {
   ETH = 'eth',
   COSMOS = 'cosmos'
 }
-
-/**
- * BlockchiansArray
- */
-export const BlockchainsArray = Object.keys(SupportBlockchainsEnum).map(key => ({
-  key,
-  // @ts-ignore
-  value: SupportBlockchainsEnum[key]
-}))
