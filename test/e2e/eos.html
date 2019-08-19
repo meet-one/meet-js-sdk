@@ -89,6 +89,20 @@
               let account = plugin.account
               let res = await plugin.transaction(
                 [
+                  // {
+                  //   account: 'eosio',
+                  //   name: 'sellrex',
+                  //   authorization: [
+                  //     {
+                  //       actor: account.name, // creator
+                  //       permission: account.authority
+                  //     }
+                  //   ],
+                  //   data: {
+                  //     from: account.name,
+                  //     rex: '1.0000 REX'
+                  //   }
+                  // },
                   {
                     account: 'eosio.token',
                     name: 'transfer',
@@ -103,20 +117,6 @@
                       to: 'g.f.w',
                       quantity: '0.0001 EOS',
                       memo: 'js-sdk transaction - 1'
-                    }
-                  },
-                  {
-                    account: 'eosio',
-                    name: 'sellrex',
-                    authorization: [
-                      {
-                        actor: account.name, // creator
-                        permission: account.authority
-                      }
-                    ],
-                    data: {
-                      from: account.name,
-                      rex: '1.0000 REX'
                     }
                   }
                 ],

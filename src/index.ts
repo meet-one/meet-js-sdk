@@ -4,7 +4,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-07-25 22:14:45
+ * @Last Modified time: 2019-08-16 10:31:11
  */
 
 import Common from './app/Common'
@@ -65,12 +65,14 @@ export class MeetWallet extends Common {
 
   /**
    * 判断当前环境是否在MEETONE客户端内
+   * 判断当前环境是否支持meet-js-sdk
    */
-  isInApp(callback: Function) {
+  isInApp(callback: (isInApp: boolean, isSupportTimeout: boolean) => this) {
     // @ts-ignore
     this.isExternal = window.scatter && window.scatter.wallet === 'MEETONE' ? false : true
     setTimeout(() => {
-      callback(!this.isExternal)
+      // @ts-ignore
+      callback(!this.isExternal, !!window.isSupportMeetoneSdk)
     }, 100)
     return this
   }
@@ -116,13 +118,15 @@ export class MeetWallet extends Common {
   }
 
   /**
-   * 加载网络
+   * Load Plugin
+   * @param {T} plugin - Blockchain support plugin
+   * @returns {Promise<{ wallet: MeetWallet; plugin: T }>}
    */
-  load(plugin: Blockchian) {
+  load<T extends Blockchian>(plugin: T): Promise<{ wallet: MeetWallet; plugin: T }> {
     return new Promise(resolve => {
       document.addEventListener('meetoneLoaded', () => {
         this.plugin = plugin
-        resolve({ wallet: this, plugin: this.plugin })
+        resolve({ plugin, wallet: this })
       })
 
       this.getChainInfo()
