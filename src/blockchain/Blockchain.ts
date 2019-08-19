@@ -1,5 +1,8 @@
 import { MeetWallet } from '../index'
 
+/**
+ * The abstract class for Plugin
+ */
 export default abstract class Blockchian {
   /** chain name */
   chain: string

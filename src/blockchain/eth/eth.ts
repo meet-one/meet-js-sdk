@@ -1,10 +1,10 @@
 import Blockchian from '../BlockChain'
 import { MeetWallet } from '../../index'
-import { Blockchains } from '../SupportBlockchain'
+import { SupportBlockchainsEnum } from '../SupportBlockchain'
 
 export class Eth extends Blockchian {
   constructor(wallet: MeetWallet) {
-    super(Blockchains.ETH, wallet)
+    super(SupportBlockchainsEnum.ETH, wallet)
   }
   init(): this {
     throw new Error('Method not implemented.')

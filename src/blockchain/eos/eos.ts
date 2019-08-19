@@ -1,6 +1,6 @@
 import { MeetWallet } from '../../index'
 import Blockchian from '../BlockChain'
-import { Blockchains } from '../SupportBlockchain'
+import { SupportBlockchainsEnum } from '../SupportBlockchain'
 import { ClientResponse } from '../../app/Interface'
 import { Buffer } from 'buffer/'
 
@@ -85,19 +85,19 @@ export class EOS extends Blockchian {
   optionsConfig: optionsConfig | undefined
 
   constructor(wallet: MeetWallet, options?: optionsConfig) {
-    super(Blockchains.EOS, wallet)
+    super(SupportBlockchainsEnum.EOS, wallet)
     this.optionsConfig = options
   }
 
   /** 插件初始化逻辑 */
   init(): this {
     // 如果当前网络非EOS类型的, 则抛出错误
-    let type = this.wallet.nodeInfo.blockchain.toLowerCase()
+    let type = this.wallet.nodeInfo.blockchain.toLowerCase() as SupportBlockchainsEnum
     let supportTypes = [
-      Blockchains.EOS,
-      Blockchains.MEETONE,
-      Blockchains.MEETONE_2,
-      Blockchains.BOS
+      SupportBlockchainsEnum.EOS,
+      SupportBlockchainsEnum.MEETONE,
+      SupportBlockchainsEnum.MEETONE_2,
+      SupportBlockchainsEnum.BOS
     ]
     if (!supportTypes.includes(type)) {
       // TODO: 询问用户是否切换网络[设想的 -> 切换后实现页面刷新重载]

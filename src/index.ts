@@ -14,9 +14,10 @@ import { defaultConfig, version } from './app/DefaultConfig'
 import Network from './util/Network'
 import Tool from './util/Tool'
 
+import Blockchian from './blockchain/BlockChain'
+import { SupportBlockchainsEnum } from './blockchain/SupportBlockchain'
 import { EOS } from './blockchain/eos/eos'
 import { Cosmos } from './blockchain/cosmos/cosmos'
-import Blockchian from './blockchain/BlockChain'
 
 /** The Meet JS SDK Library for MEET.ONE Client */
 export class MeetWallet extends Common {
@@ -203,4 +204,4 @@ export class MeetWallet extends Common {
   }
 }
 
-export { Network as http, Tool as util, EOS as Eos, Cosmos }
+export { Network as http, Tool as util, EOS as Eos, Cosmos, SupportBlockchainsEnum }
