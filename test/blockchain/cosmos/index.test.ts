@@ -1,4 +1,4 @@
-import { Cosmos } from '../../../src/blockchain/cosmos/cosmos'
+import { Cosmos } from '../../../src/blockchain/'
 import { MeetWallet } from '../../../src'
 import { SupportBlockchainEnums } from '../../../src/blockchain/SupportBlockchain'
 

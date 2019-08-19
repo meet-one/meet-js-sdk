@@ -29,7 +29,7 @@
         // Current global values
         let isFullScreen = false,
           isHorizontal = false,
-          isDisableGestures = false
+          isDisableGestures = true
         // web/back
         back = async e => {
           executing(e)
@@ -96,6 +96,7 @@
         gestures = async e => {
           executing(e)
           try {
+            // init `isDisableGestures = true`
             isDisableGestures = !isDisableGestures
             let response = await wallet.gestures(isDisableGestures)
             if (response.code === 0) {
@@ -108,6 +109,7 @@
           }
         }
 
+        // TODO: 客户端对接需要设计稿
         switchWallet = async e => {
           executing(e)
           try {

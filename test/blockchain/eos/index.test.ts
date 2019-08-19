@@ -3,10 +3,10 @@
  * @Author: JohnTrump
  * @Date: 2019-06-23 21:25:49
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-08-19 15:29:11
+ * @Last Modified time: 2019-08-19 16:28:01
  */
 
-import { EOS } from '../../../src/blockchain/eos/eos'
+import { EOS } from '../../../src/blockchain'
 import { MeetWallet } from '../../../src'
 import { SupportBlockchainEnums } from '../../../src/blockchain/SupportBlockchain'
 const CUSTOM_TIMEOUT = 10 * 1000

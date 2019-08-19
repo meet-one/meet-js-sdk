@@ -4,20 +4,15 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-08-16 10:31:11
+ * @Last Modified time: 2019-08-19 16:14:47
  */
 
 import Common from './app/Common'
 import { Config, AppInfo, NodeInfo, AppInfoResponse } from './app/Interface'
 import { defaultConfig, version } from './app/DefaultConfig'
 
-import Network from './util/Network'
-import Tool from './util/Tool'
-
-import Blockchian from './blockchain/BlockChain'
-import { SupportBlockchainEnums } from './blockchain/SupportBlockchain'
-import { EOS } from './blockchain/eos/eos'
-import { Cosmos } from './blockchain/cosmos/cosmos'
+import { Network, Tool } from './util'
+import { EOS, Cosmos, BlockchainPlugin, SupportBlockchainEnums } from './blockchain'
 
 /** The Meet JS SDK Library for MEET.ONE Client */
 export class MeetWallet extends Common {
@@ -28,7 +23,7 @@ export class MeetWallet extends Common {
   /** 当前应用节点信息 */
   nodeInfo!: NodeInfo
   /** 当前链 */
-  plugin: Blockchian | undefined
+  plugin: BlockchainPlugin | undefined
   /** 是否为MEETONE外部打开 */
   isExternal: boolean | undefined
   tryTimes: number
@@ -123,7 +118,7 @@ export class MeetWallet extends Common {
    * @param {T} plugin - Blockchain support plugin
    * @returns {Promise<{ wallet: MeetWallet; plugin: T }>}
    */
-  load<T extends Blockchian>(plugin: T): Promise<{ wallet: MeetWallet; plugin: T }> {
+  load<T extends BlockchainPlugin>(plugin: T): Promise<{ wallet: MeetWallet; plugin: T }> {
     return new Promise(resolve => {
       document.addEventListener('meetoneLoaded', () => {
         this.plugin = plugin
@@ -204,10 +199,6 @@ export class MeetWallet extends Common {
   }
 }
 
-export {
-  Network as http,
-  Tool as util,
-  EOS as Eos,
-  Cosmos,
-  SupportBlockchainEnums as SupportBlockchainsEnum
-}
+export { EOS as Eos, Cosmos }
+
+export { Network as http, Tool as util, SupportBlockchainEnums }
