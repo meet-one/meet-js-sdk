@@ -16,7 +16,7 @@ export interface ClientResponse {
   /** 类型值, 已弃用 */
   type: number
   /** 客户端返回的数据 */
-  data: object
+  data?: object
 }
 
 /** 包含错误信息的客户端回调 */

@@ -4,7 +4,7 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-08-19 16:14:47
+ * @Last Modified time: 2019-08-19 17:39:18
  */
 
 import Common from './app/Common'
@@ -12,7 +12,7 @@ import { Config, AppInfo, NodeInfo, AppInfoResponse } from './app/Interface'
 import { defaultConfig, version } from './app/DefaultConfig'
 
 import { Network, Tool } from './util'
-import { EOS, Cosmos, BlockchainPlugin, SupportBlockchainEnums } from './blockchain'
+import { EOS, Cosmos, BNB, BlockchainPlugin, SupportBlockchainEnums } from './blockchain'
 
 /** The Meet JS SDK Library for MEET.ONE Client */
 export class MeetWallet extends Common {
@@ -199,6 +199,6 @@ export class MeetWallet extends Common {
   }
 }
 
-export { EOS as Eos, Cosmos }
+export { EOS as Eos, Cosmos, BNB }
 
 export { Network as http, Tool as util, SupportBlockchainEnums }

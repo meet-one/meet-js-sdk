@@ -107,8 +107,6 @@ export class EOS extends Blockchian {
     this.getIdentity().then(resolve => {
       if (resolve) {
         if (typeof window !== 'undefined') document.dispatchEvent(new CustomEvent('meetoneLoaded'))
-      } else {
-        // 没有登录账号
       }
     })
     return this
