@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- H5页面窗口自动调整到设备宽度，并禁止用户缩放页面 -->
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"
+    />
+    <!-- 忽略将页面中的数字识别为电话号码 -->
+    <meta name="format-detection" content="telephone=no" />
+    <!-- 忽略Android平台中对邮箱地址的识别 -->
+    <meta name="format-detection" content="email=no" />
+    <!-- 当网站添加到主屏幕快速启动方式，可隐藏地址栏，仅针对ios的safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- 将网站添加到主屏幕快速启动方式，仅针对ios的safari顶端状态条的样式 -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <!-- 可选default、black、black-translucent -->
+
+    <title>E2E Testing - EOS</title>
+
+    <!-- necessary import -->
+    <script src="../../dist/meet-js-sdk.umd.js"></script>
+    <script src="https://cdn.bootcss.com/vConsole/3.3.0/vconsole.min.js"></script>
+    <!-- Eosjs@20+ -->
+    <!-- <script src="./eosjs@20-dist-web/eosjs-api.js"></script>
+    <script src="./eosjs@20-dist-web/eosjs-jsonrpc.js"></script> -->
+    <script src="./eosjs@20-dist-web/debug/eosjs-api-debug.js"></script>
+    <script src="./eosjs@20-dist-web/debug/eosjs-jsonrpc-debug.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/eosjs-ecc@4.0.4/lib/eosjs-ecc.min.js"
+      integrity="sha512-dYFDmK/d9r3/NCp6toLtfkwOjSMRBaEzaGAx1tfRItC0nsI0hVLERk05iNBQR7uDNI7ludYhcBI4vUiFHdjsTQ=="
+      crossorigin="anonymous"
+    ></script>
+    <script src="./script.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+
+    <script>
+      let wallet = new MeetJS.MeetWallet({ isDebug: true })
+      wallet
+        .load(
+          new MeetJS.Eos(wallet, {
+            protocol: 'https',
+            host: 'public.eosinfra.io',
+            port: 443,
+            chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
+          })
+        )
+        .then(({ wallet, plugin }) => {
+          alert('Loaded')
+          // 参数1 默认取 window.eosjs_api.Api
+          // 参数2 默认取 window.eosjs_jsonrpc.JsonRpc
+          let eos = plugin.getEos2(eosjs_api.Api, eosjs_jsonrpc.JsonRpc)
+          eosSignProvider = async e => {
+            executing(e)
+            let account = plugin.account
+            try {
+              let res = await eos.transact(
+                {
+                  actions: [
+                    {
+                      account: 'eosio.token',
+                      name: 'transfer',
+                      authorization: [
+                        {
+                          actor: account.name, // use account that was logged in
+                          permission: account.authority
+                        }
+                      ],
+                      data: {
+                        from: account.name, // use account that was logged in
+                        to: 'g.f.w',
+                        quantity: '0.0001 EOS',
+                        memo: 'js-sdk signProvider2'
+                      }
+                    }
+                  ]
+                },
+                {
+                  blocksBehind: 3,
+                  expireSeconds: 60
+                }
+              )
+              if (res.transaction_id) {
+                success(e)
+              } else {
+                failed(e)
+              }
+            } catch (error) {
+              failed(e)
+              console.log(error)
+            }
+          }
+        })
+    </script>
+  </head>
+  <body>
+    <h1>Tests - EOS</h1>
+
+    <button onClick="runAllTests();">Run All Tests</button>
+
+    <div class="tests">
+      <div>
+        <h2>eos/sign_provider</h2>
+        <button onClick="eosSignProvider(event);">Test</button>
+      </div>
+    </div>
+  </body>
+</html>

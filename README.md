@@ -25,9 +25,16 @@ Better Typescript support, Better Intelligent code completion, Better friendly A
     - [wallet.shareLink](#walletsharelink)
     - [wallet.webview](#walletwebview)
     - [wallet.webviewMenu](#walletwebviewmenu)
+    - [wallet.back](#walletback)
+    - [wallet.close](#walletclose)
+    - [wallet.fullScreen](#walletfullscreen)
+    - [wallet.horizontal](#wallethorizontal)
+    - [wallet.gestures](#walletgestures)
+    - [wallet.switchWallet](#walletswitchwallet)
   - [Plugin](#plugin)
     - [Eos](#eos)
       - [plugin.getEos [recommend]](#plugingeteos-recommend)
+      - [plugin.getEos2](#plugingeteos2)
       - [plugin.sign](#pluginsign)
       - [plugin.getIdentity](#plugingetidentity)
       - [plugin.transaction](#plugintransaction)
@@ -479,6 +486,182 @@ wallet.webviewMenu('custom menu', () => {
 })
 ```
 
+### wallet.back
+
+```
+wallet.back()
+```
+
+后退操作
+
+Back operation
+
+**Parameters**
+
+None
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+let response = await wallet.back()
+if (response.code === 0) {
+  success(e)
+} else {
+  failed(e)
+}
+```
+
+### wallet.close
+
+```
+wallet.close()
+```
+
+关闭当前页面
+
+Close current webview
+
+**Parameters**
+
+None
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+let response = await wallet.close()
+if (response.code === 0) {
+  success(e)
+} else {
+  failed(e)
+}
+```
+
+### wallet.fullScreen
+
+```
+wallet.fullScreen(isFullScreen: boolean = false)
+```
+
+进入全屏模式
+
+Control fullscreen whether or not
+
+**Parameters**
+
+- isFullScreen
+  - true - fullscreen
+  - false - not fullscreen
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+isFullScreen = !isFullScreen
+let response = await wallet.fullScreen(isFullScreen)
+if (response.code === 0) {
+  success(e)
+} else {
+  failed(e)
+}
+```
+
+### wallet.horizontal
+
+```
+wallet.horizontal(isHorizontal: boolean = false)
+```
+
+控制 Dapps 浏览器是否水平显示
+
+Control Dapps browser horizontal or vertical
+
+**Parameters**
+
+- isHorizontal
+  - true - 水平显示 Horizontal
+  - false - 正常显示 Vertical(default)
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+let response = await wallet.horizontal()
+if (response.code === 0) {
+  success(e)
+} else {
+  failed(e)
+}
+```
+
+### wallet.gestures
+
+```
+wallet.gestures(isDisableGestures: boolean = false)
+```
+
+禁止当前页面手势判断操作(当前 webview 中有效)，客户端默认的手势的判断包括: 左滑前进, 右滑后退操作
+
+Disable the left-sliding gesture to forward, right-sliding gesture to back
+
+**Parameters**
+
+- isDisableGestures
+  - true - disable default gestures
+  - false - enable gestures
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```js
+let response = await wallet.gestures(false)
+if (response.code === 0) {
+  success(e)
+} else {
+  failed(e)
+}
+```
+
+### wallet.switchWallet
+
+```
+wallet.switchWallet(type: string = '')
+```
+
+显示切换钱包的弹窗, 切换后刷新所有 webview
+
+Display the popups about wallet switcher, after then reload all webview
+
+**Parameters**
+
+type: enum['meetone', 'eos', 'bos', 'eth', 'cosmos']
+
+**Returns**
+
+`Promise<ClientResponse>`
+
+**Example**
+
+```
+let response = await wallet.switchWallet('meetone')
+```
+
 ## Plugin
 
 ### Eos
@@ -488,6 +671,8 @@ wallet.webviewMenu('custom menu', () => {
 MEET.ONE Wallet have already supported _Scatter Protocols[recommend]_.(eosjs@16.0.9, eosjs@20+)
 
 #### plugin.getEos [recommend]
+
+Required Version: EosJS >= 16
 
 ```
 plugin.getEos(eosOptions?: EosConfig, Eos?: Object<Eos>)
@@ -511,6 +696,34 @@ plugin.getEos(eosOptions?: EosConfig, Eos?: Object<Eos>)
 ```js
 let eos = plugin.getEos();
 eos.transaction({...})
+```
+
+#### plugin.getEos2
+
+Required Version: EosJS >= 20
+
+```
+plugin.getEos(Api?: object, JsonRpc?: object)
+```
+
+使用此方法获取 `Eosjs` 实例, 签名部分由客户端代理(`signProvider`), 客户端只负责对数据做签名
+
+`plugin.getEos()` will return `Eosjs` instance object. All operations which need signature will be proxied by `plugin.signProvider()` and invoke client protocol to sign
+
+返回的 `Eosjs` 实例 API 请参考 [EOSIO/eosjs@20+](https://eosio.github.io/eosjs/)
+
+`Eosjs` instance object APIs please refer to [EOSIO/eosjs@20+](https://eosio.github.io/eosjs/)
+
+**Example**
+
+```js
+// Browser Distribution
+let eos = plugin.getEos2(eosjs_api.Api, eosjs_jsonrpc.JsonRpc)
+let res = await eos.transact({...})
+const { Api, JsonRpc } = require('eosjs'); // CommonJS
+// import { Api, JsonRpc } from 'eosjs'; // ES Modules
+let eos = plugin.getEos2(Api, JsonRpc)
+let res = await eos.transact({...})
 ```
 
 #### plugin.sign
@@ -1212,7 +1425,8 @@ npm run test:watch
 
 ```
 cd meet-js-sdk/
-npm run start && npx http-server -o -c-1
+npm run start
+npx http-server -o -c-1 -p 8081 // http://127.0.0.1:8081/test/e2e/
 ```
 
 ## Change Log

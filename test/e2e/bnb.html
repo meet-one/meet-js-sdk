@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- H5页面窗口自动调整到设备宽度，并禁止用户缩放页面 -->
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"
+    />
+    <!-- 忽略将页面中的数字识别为电话号码 -->
+    <meta name="format-detection" content="telephone=no" />
+    <!-- 忽略Android平台中对邮箱地址的识别 -->
+    <meta name="format-detection" content="email=no" />
+    <!-- 当网站添加到主屏幕快速启动方式，可隐藏地址栏，仅针对ios的safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- 将网站添加到主屏幕快速启动方式，仅针对ios的safari顶端状态条的样式 -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <!-- 可选default、black、black-translucent -->
+
+    <title>E2E Testing - BNB</title>
+
+    <!-- necessary import -->
+    <script src="../../dist/meet-js-sdk.umd.js"></script>
+    <script src="https://cdn.bootcss.com/vConsole/3.3.0/vconsole.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/eosjs@16.0.9/lib/eos.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/eosjs-ecc@4.0.4/lib/eosjs-ecc.min.js"
+      integrity="sha512-dYFDmK/d9r3/NCp6toLtfkwOjSMRBaEzaGAx1tfRItC0nsI0hVLERk05iNBQR7uDNI7ludYhcBI4vUiFHdjsTQ=="
+      crossorigin="anonymous"
+    ></script>
+    <script src="./script.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+
+    <script>
+      let wallet = new MeetJS.MeetWallet({ isDebug: true })
+      wallet.load(new MeetJS.BNB(wallet, {})).then(({ wallet, plugin }) => {
+        // bnb/account_info
+        account_info = async e => {
+          executing(e)
+          try {
+            let res = await plugin.getAccountInfo()
+            if (res.code == 0) {
+              success(e)
+            }
+          } catch (error) {
+            failed(e)
+            console.error(error)
+          }
+        }
+
+        // bnb/getBalance
+        getBalance = async e => {
+          executing(e)
+          try {
+            let res = await plugin.getBalance('MEETONE-031')
+            if (res.code == 0) {
+              success(e)
+            }
+          } catch (error) {
+            failed(e)
+            console.error(error)
+          }
+        }
+        // bnb/transfer
+        transfer = async e => {
+          executing(e)
+          try {
+            let res = await plugin.transfer(
+              'MEETONE-031',
+              'bnb1uejer2tme2xx3ddtfcuxggnnfk2rz2l4rq9xjh',
+              '0.0001',
+              'js-sdk-test'
+            )
+            if (res.code == 0) {
+              success(e)
+            }
+          } catch (error) {
+            failed(e)
+            console.error(error)
+          }
+        }
+      })
+    </script>
+  </head>
+  <body>
+    <h1>Tests - BNB</h1>
+
+    <button onClick="runAllTests();">Run All Tests</button>
+
+    <div class="tests">
+      <div>
+        <h2>bnb/account_info</h2>
+        <button onClick="account_info(event)">Test</button>
+      </div>
+      <div>
+        <h2>bnb/getBalance</h2>
+        <button onClick="getBalance(event)">Test</button>
+      </div>
+      <div>
+        <h2>bnb/transfer</h2>
+        <button onClick="transfer(event)">Test</button>
+      </div>
+    </div>
+  </body>
+</html>

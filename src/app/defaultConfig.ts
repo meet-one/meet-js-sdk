@@ -1,5 +1,5 @@
 /** 当前库的版本号 */
-export const version = '0.1.2'
+export const version = '0.2.0'
 
 export const defaultConfig = {
   protocol: 'meetone://',

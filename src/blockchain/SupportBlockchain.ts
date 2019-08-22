@@ -3,27 +3,18 @@
  * @Author: JohnTrump
  * @Date: 2019-06-20 14:45:28
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-07-01 11:21:49
+ * @Last Modified time: 2019-08-20 11:57:53
  */
 
-/**
- * Support Blockchian
- */
-export const Blockchains = {
-  EOS: 'eos',
-  // iOS端与Android端没有统一, 所以取两个
-  MEETONE: 'meet.one', // iOS
-  MEETONE_2: 'meetone', // Android
-  BOS: 'bos',
-  ETH: 'eth',
-  COSMOS: 'cosmos'
+export enum SupportBlockchainEnums {
+  EOS = 'eos',
+  MEETONE = 'meetone',
+  /** 兼容用, 尽量不用 */
+  MEETONE_2 = 'meet.one',
+  BOS = 'bos',
+  ETH = 'eth',
+  COSMOS = 'cosmos',
+  BNB = 'bnb',
+  /** 兼容用, 尽量不用 */
+  BNB_2 = 'binance'
 }
-
-/**
- * BlockchiansArray
- */
-export const BlockchainsArray = Object.keys(Blockchains).map(key => ({
-  key,
-  // @ts-ignore
-  value: Blockchains[key]
-}))

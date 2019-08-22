@@ -4,19 +4,15 @@
  * @Author: JohnTrump
  * @Date: 2019-06-19 14:26:52
  * @Last Modified by: JohnTrump
- * @Last Modified time: 2019-07-25 22:14:45
+ * @Last Modified time: 2019-08-19 17:39:18
  */
 
 import Common from './app/Common'
 import { Config, AppInfo, NodeInfo, AppInfoResponse } from './app/Interface'
 import { defaultConfig, version } from './app/DefaultConfig'
 
-import Network from './util/Network'
-import Tool from './util/Tool'
-
-import { EOS } from './blockchain/eos/eos'
-import { Cosmos } from './blockchain/cosmos/cosmos'
-import Blockchian from './blockchain/BlockChain'
+import { Network, Tool } from './util'
+import { EOS, Cosmos, BNB, BlockchainPlugin, SupportBlockchainEnums } from './blockchain'
 
 /** The Meet JS SDK Library for MEET.ONE Client */
 export class MeetWallet extends Common {
@@ -27,7 +23,7 @@ export class MeetWallet extends Common {
   /** 当前应用节点信息 */
   nodeInfo!: NodeInfo
   /** 当前链 */
-  plugin: Blockchian | undefined
+  plugin: BlockchainPlugin | undefined
   /** 是否为MEETONE外部打开 */
   isExternal: boolean | undefined
   tryTimes: number
@@ -65,12 +61,14 @@ export class MeetWallet extends Common {
 
   /**
    * 判断当前环境是否在MEETONE客户端内
+   * 判断当前环境是否支持meet-js-sdk
    */
-  isInApp(callback: Function) {
+  isInApp(callback: (isInApp: boolean, isSupportTimeout: boolean) => this) {
     // @ts-ignore
     this.isExternal = window.scatter && window.scatter.wallet === 'MEETONE' ? false : true
     setTimeout(() => {
-      callback(!this.isExternal)
+      // @ts-ignore
+      callback(!this.isExternal, !!window.isSupportMeetoneSdk)
     }, 100)
     return this
   }
@@ -116,13 +114,15 @@ export class MeetWallet extends Common {
   }
 
   /**
-   * 加载网络
+   * Load Plugin
+   * @param {T} plugin - Blockchain support plugin
+   * @returns {Promise<{ wallet: MeetWallet; plugin: T }>}
    */
-  load(plugin: Blockchian) {
+  load<T extends BlockchainPlugin>(plugin: T): Promise<{ wallet: MeetWallet; plugin: T }> {
     return new Promise(resolve => {
       document.addEventListener('meetoneLoaded', () => {
         this.plugin = plugin
-        resolve({ wallet: this, plugin: this.plugin })
+        resolve({ plugin, wallet: this })
       })
 
       this.getChainInfo()
@@ -199,4 +199,6 @@ export class MeetWallet extends Common {
   }
 }
 
-export { Network as http, Tool as util, EOS as Eos, Cosmos }
+export { EOS as Eos, Cosmos, BNB }
+
+export { Network as http, Tool as util, SupportBlockchainEnums }

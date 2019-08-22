@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- H5页面窗口自动调整到设备宽度，并禁止用户缩放页面 -->
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"
+    />
+    <!-- 忽略将页面中的数字识别为电话号码 -->
+    <meta name="format-detection" content="telephone=no" />
+    <!-- 忽略Android平台中对邮箱地址的识别 -->
+    <meta name="format-detection" content="email=no" />
+    <!-- 当网站添加到主屏幕快速启动方式，可隐藏地址栏，仅针对ios的safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- 将网站添加到主屏幕快速启动方式，仅针对ios的safari顶端状态条的样式 -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <!-- 可选default、black、black-translucent -->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>E2E Testing - 0.2.0</title>
+
+    <!-- necessary import -->
+    <script src="../../dist/meet-js-sdk.umd.js"></script>
+    <script src="https://cdn.bootcss.com/vConsole/3.3.0/vconsole.min.js"></script>
+    <script src="./script.js"></script>
+    <link rel="stylesheet" href="./style.css" />
+    <script>
+      wallet = new MeetJS.MeetWallet({ isDebug: true }).isInApp(isApp => {
+        // Current global values
+        let isFullScreen = false,
+          isHorizontal = false,
+          isDisableGestures = true
+        // web/back
+        back = async e => {
+          executing(e)
+          try {
+            let response = await wallet.back()
+            if (response.code === 0) {
+              success(e)
+            } else {
+              failed(e)
+            }
+          } catch (error) {
+            failed(e)
+          }
+        }
+
+        // web/close
+        my_close = async e => {
+          executing(e)
+          try {
+            let response = await wallet.close()
+            if (response.code === 0) {
+              success(e)
+            } else {
+              failed(e)
+            }
+          } catch (error) {
+            failed(e)
+          }
+        }
+
+        // app/fullscreen
+        fullScreen = async e => {
+          executing(e)
+          try {
+            isFullScreen = !isFullScreen
+            let response = await wallet.fullScreen(isFullScreen)
+            if (response.code === 0) {
+              success(e)
+            } else {
+              failed(e)
+            }
+          } catch (error) {
+            failed(e)
+          }
+        }
+
+        // app/horizontal
+        horizontal = async e => {
+          executing(e)
+          try {
+            isHorizontal = !isHorizontal
+            let response = await wallet.horizontal(isHorizontal)
+            if (response.code === 0) {
+              success(e)
+            } else {
+              failed(e)
+            }
+          } catch (error) {
+            failed(e)
+          }
+        }
+
+        // app/gestures
+        gestures = async e => {
+          executing(e)
+          try {
+            // init `isDisableGestures = true`
+            isDisableGestures = !isDisableGestures
+            let response = await wallet.gestures(isDisableGestures)
+            if (response.code === 0) {
+              success(e)
+            } else {
+              failed(e)
+            }
+          } catch (error) {
+            failed(e)
+          }
+        }
+
+        // TODO: 客户端对接需要设计稿
+        switchWallet = async e => {
+          executing(e)
+          try {
+            let response = await wallet.switchWallet('meetone')
+            if (response.code === 0) {
+              success(e)
+            } else {
+              failed(e)
+            }
+          } catch (error) {
+            failed(e)
+          }
+        }
+      })
+    </script>
+  </head>
+  <body>
+    <h1>Tests - 0.2.0</h1>
+    <div class="tests">
+      <!-- 后退操作 -->
+      <div>
+        <h2>web/back</h2>
+        <button onclick="back(event)">Test</button>
+      </div>
+
+      <!-- 关闭当前页面 -->
+      <div>
+        <h2>web/close</h2>
+        <button onclick="my_close(event)">Test</button>
+      </div>
+
+      <!-- 禁止当前页面的手势操作判断, 再次点击恢复正常 -->
+      <div>
+        <h2>app/gestures</h2>
+        <button onclick="gestures(event)">Test</button>
+      </div>
+
+      <!-- 旋转屏幕, 再次点击旋转回来 -->
+      <div>
+        <h2>app/horizontal</h2>
+        <button onclick="horizontal(event)">Test</button>
+      </div>
+
+      <!-- 控制是否全屏显示 -->
+      <div>
+        <h2>app/fullscreen</h2>
+        <button onclick="fullScreen(event)">Test</button>
+      </div>
+
+      <!-- 切换钱包的弹窗 -->
+      <div>
+        <h2>app/switchwallet</h2>
+        <button onclick="switchWallet(event)">Test</button>
+      </div>
+    </div>
+  </body>
+</html>
